@@ -3,52 +3,16 @@
 #include <stdio.h>
 
 #include "spec.h"
+#include "opcodes.h"
 
-#define MAX_PROGRAM_SIZE 32767
-
-typedef uint32_t u32;
-
-typedef struct {
-
-    u32 program_counter;
-    u32 program[MAX_PROGRAM_SIZE];
-    u32 program_size;
-    u32 registers[REG_COUNT];
-} VM;
-
-void state_dump(VM *vm) {
-
-    printf("STATE_DUMP: \n");
-
-    printf("PROGRAM MEMORY:\n");
-
-    for (u32 i = 0; i < vm->program_size; ++i) {
-        printf(" %d ", vm->program[i]);
-    }
-
-    printf("\n");
-
-    printf("##############################\n");
-
-    printf("REGISTERS:\n");
-
-    for (u32 i = 0; i < REG_COUNT; ++i) {
-        printf("        register[%d] = %d\n", i, vm->registers[i]);
-    }
-
-    printf("##############################\n");
-
-    printf("MACHINE INFO:\n");
-
-    printf("        program_couter = %d\n", vm->program_counter);
-    printf("        program_size   = %d\n", vm->program_size);
-}
 
 int main(void) {
 
     //   const char *program_path = "program.vmbin";
 
     VM vm = {0};
+
+    // hard code the program for now
 
     printf("program loaded: \n"
            "    mov 30, %%5 \n"
@@ -64,17 +28,23 @@ int main(void) {
     vm.program[1] = 30;
     vm.program[2] = 5;
 
-    vm.program[3] = STATE_DUMP;
+    vm.program[3] = NO_OP;
 
+    vm.program[4] = STATE_DUMP;
+
+    vm.program[5] = NO_OP;
     /* load the value of register 5 in to register 7 */
     /* r7 = r5; */
-    vm.program[4] = LD;
-    vm.program[5] = 5;
-    vm.program[6] = 7;
+    vm.program[6] = LD;
+    vm.program[7] = 5;
+    vm.program[8] = 7;
 
-    vm.program[7] = STATE_DUMP;
+    vm.program[9] = NO_OP;
 
-    vm.program_size = 8;
+    vm.program[10] = STATE_DUMP;
+    vm.program[11] = HALT;
+
+    vm.program_size = 12;
 
     for (u32 i = 0; i < vm.program_size; ++i) {
 
@@ -83,49 +53,38 @@ int main(void) {
 
     printf("==== VM INIT ===\n");
 
-    bool loop = true;
+    vm.halted = false;
 
-    while (loop) {
-
-        printf("debug: program_counter = %d\n", vm.program_counter);
+    while (!vm.halted) {
 
         switch (vm.program[vm.program_counter]) {
 
+        case NO_OP: {
+            no_op(&vm);
+        } break;
+
+        case HALT: {
+            halt(&vm);
+        } break;
+
         case STATE_DUMP: {
             state_dump(&vm);
-            vm.program_counter++;
-
         } break;
 
         case MOV: {
-            printf("MOV: \n");
-            vm.program_counter++;
-            u32 tmp = vm.program[vm.program_counter];
-            printf("    tmp = %d\n", vm.program[vm.program_counter]);
-            vm.program_counter++;
-            vm.registers[vm.program[vm.program_counter]] = tmp;
-            printf("    reg%d = %d\n", vm.program[vm.program_counter], tmp);
-            vm.program_counter++;
-        } break;
+            mov(&vm);
+        }
+        break;
 
         case LD: {
-            printf("LD: \n");
-            vm.program_counter++;
-            u32 reg_num = vm.program[vm.program_counter];
-            printf("    reg_num = %d\n", reg_num);
-            u32 value = vm.registers[reg_num];
-            printf("    value = %d\n", value);
-            vm.program_counter++;
-            u32 reg_target = vm.program[vm.program_counter];
-            printf("    reg_target = %d\n", reg_target);
-            vm.registers[reg_target] = value;
-            vm.program_counter++;
+            ld(&vm);
+        }
+        break;
 
-        } break;
 
         default: {
             printf("default\n");
-            loop = false;
+            vm.halted = true;
             break;
         }
         }

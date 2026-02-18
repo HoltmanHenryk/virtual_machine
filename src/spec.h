@@ -1,6 +1,13 @@
 #ifndef SPEC_H
 #define SPEC_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
+#define MAX_PROGRAM_SIZE 32767
+
+typedef uint32_t u32;
+
 typedef enum {
     REG_0 = 0,
     REG_1,
@@ -21,5 +28,14 @@ typedef enum {
     LD,  /* load value from register to register -> ld %reg_a, %reg_b */
 
 } Opcodes;
+
+typedef struct {
+
+    u32 program_counter;
+    u32 program[MAX_PROGRAM_SIZE];
+    u32 program_size;
+    u32 registers[REG_COUNT];
+    bool halted;
+} VM;
 
 #endif /* SPEC_H */
