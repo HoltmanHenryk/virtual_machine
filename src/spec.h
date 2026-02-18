@@ -7,8 +7,9 @@
 #define MAX_PROGRAM_SIZE 32767
 
 typedef uint32_t u32;
+typedef int32_t i32;
 
-typedef enum {
+typedef enum : i32 {
     REG_0 = 0,
     REG_1,
     REG_2,
@@ -23,7 +24,7 @@ typedef enum {
     REG_COUNT,
 } Registers;
 
-typedef enum {
+typedef enum : i32 {
     NO_OP = 0,
     HALT,
     STATE_DUMP,

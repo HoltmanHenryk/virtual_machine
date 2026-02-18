@@ -19,13 +19,12 @@ int main(void) {
     printf("program_counter = %d\n", vm.program_counter);
 
     
-    u32 loded_program[] = {MOV, 30, REG_5,
+    i32 loded_program[] = {MOV, -1, REG_5,
                            NO_OP,
                            LD, REG_5, REG_7,
                            NO_OP,
                            INC, REG_5,
                            STO_PC, REG_0,
-                           JMP, REG_0,
                            STATE_DUMP,
                            HALT};
 
