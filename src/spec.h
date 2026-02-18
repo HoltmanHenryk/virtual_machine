@@ -1,8 +1,8 @@
 #ifndef SPEC_H
 #define SPEC_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define MAX_PROGRAM_SIZE 32767
 
@@ -24,8 +24,9 @@ typedef enum {
     NO_OP = 0,
     HALT,
     STATE_DUMP,
-    MOV, 
-    LD,  
+    MOV,
+    LD,
+    INC
 
 } Opcodes;
 
@@ -36,6 +37,7 @@ typedef struct {
     u32 program_size;
     u32 registers[REG_COUNT];
     bool halted;
+    bool verbose;
 } VM;
 
 #endif /* SPEC_H */

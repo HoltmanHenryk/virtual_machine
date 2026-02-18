@@ -1,64 +1,40 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
-#include "spec.h"
 #include "opcodes.h"
+#include "spec.h"
 
+#define ARR_LEN(arr) (sizeof(arr) / sizeof(arr)[0])
 
 int main(void) {
 
     //   const char *program_path = "program.vmbin";
 
-    VM vm = {0};
+    VM vm = {};
 
     // hard code the program for now
 
-    printf("program loaded: \n"
-           "    mov 30, %%5 \n"
-           "    NO_OP\n"
-           "    STATE_DUMP\n"
-           "    NO_OP\n"
-           "    ld %%5, %%7\n"
-           "    NO_OP\n"
-           "    STATE_DUMP\n"
-           "    HALT\n"
-           "\n");
-
     printf("program_counter = %d\n", vm.program_counter);
 
-    /* move 30 in to register 5 */
-    /* r5 = 30; */
-    vm.program[0] = MOV;
-    vm.program[1] = 30;
-    vm.program[2] = 5;
+    
+    u32 loded_program[] = {MOV, 30, 5,
+                           NO_OP,
+                           LD, 5, 7,
+                           NO_OP,
+                           INC, 5,
+                           STATE_DUMP,
+                           HALT};
 
-    vm.program[3] = NO_OP;
+    memcpy(vm.program, loded_program, sizeof(loded_program));
 
-    vm.program[4] = STATE_DUMP;
-
-    vm.program[5] = NO_OP;
-    /* load the value of register 5 in to register 7 */
-    /* r7 = r5; */
-    vm.program[6] = LD;
-    vm.program[7] = 5;
-    vm.program[8] = 7;
-
-    vm.program[9] = NO_OP;
-
-    vm.program[10] = STATE_DUMP;
-    vm.program[11] = HALT;
-
-    vm.program_size = 12;
-
-    for (u32 i = 0; i < vm.program_size; ++i) {
-
-        printf("program[%d] = %d\n", i, vm.program[i]);
-    }
+    vm.program_size = ARR_LEN(loded_program);
 
     printf("==== VM INIT ===\n");
 
     vm.halted = false;
+    vm.verbose = true;
 
     while (!vm.halted) {
 
@@ -78,14 +54,15 @@ int main(void) {
 
         case MOV: {
             mov(&vm);
-        }
-        break;
+        } break;
 
         case LD: {
             ld(&vm);
-        }
-        break;
+        } break;
 
+        case INC: {
+            inc(&vm);
+        } break;
 
         default: {
             printf("default\n");
