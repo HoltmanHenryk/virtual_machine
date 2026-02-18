@@ -29,7 +29,8 @@ typedef enum {
     STATE_DUMP,
     MOV,
     LD,
-    INC
+    INC,
+    STO_PC
 
 } Opcodes;
 
@@ -41,6 +42,7 @@ typedef struct {
     u32 registers[REG_COUNT];
     bool halted;
     bool verbose;
+
 } VM;
 
 #endif /* SPEC_H */
