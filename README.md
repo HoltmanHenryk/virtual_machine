@@ -8,6 +8,7 @@ In the future i will be implementing a way to assemble human readable code in to
 ### Opcodes implemented
 
 | Opcode |  INFO | Argument count |
+| -------| ------|----------------|
 | NO\_OP |  No operation. | 0 |
 | HALT   |  Halts the machine. | 0 |
 | STATE\_DUMP | Prints the value of the registers, program size and program counter | 0 |
