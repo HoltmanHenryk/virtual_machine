@@ -3,11 +3,12 @@
 #include <stdio.h>
 
 void no_op(VM *vm) {
-    printf("NO_OP {} \n");
+    printf("NO_OP\n");
     vm->program_counter++;
 }
 
 void halt(VM *vm) {
+    printf("HALT:\n");
     printf("==== MACHINE HALTED ====\n");
     vm->halted = true;
 }
@@ -18,7 +19,7 @@ void state_dump(VM *vm) {
     printf("##############################\n");
     printf("REGISTERS:\n");
     for (u32 i = 0; i < REG_COUNT; ++i) {
-        printf("        register[%d] = %d\n", i, vm->registers[i]);
+        printf("        register[%.2d] = %.2d\n", i, vm->registers[i]);
     }
     printf("##############################\n");
     printf("MACHINE INFO:\n");
@@ -61,7 +62,7 @@ void inc(VM *vm) {
     printf("INC: {");
     vm->program_counter++;
     u32 reg_ind = vm->program[vm->program_counter];
-    printf(" register[%d] = %d ", reg_ind, vm->registers[reg_ind]);
+    printf(" register[%d] = %d", reg_ind, vm->registers[reg_ind]);
     vm->registers[reg_ind]++;
     printf(" -> %d }", vm->registers[reg_ind]);
     vm->program_counter++;

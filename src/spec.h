@@ -17,6 +17,9 @@ typedef enum {
     REG_5,
     REG_6,
     REG_7,
+    REG_8,
+    REG_9,
+    REG_10,
     REG_COUNT,
 } Registers;
 
