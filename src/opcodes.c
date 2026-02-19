@@ -86,8 +86,8 @@ void sto_pc(VM *vm) {
     i32 pc = vm->program_counter;
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
-    vm->registers[reg_ind] = pc;
-    printf(" register[%.2d] = %.2d }\n", reg_ind, pc);
+    vm->registers[reg_ind] = pc + 2; /* pos of the next operation after sto_pc argument */
+    printf(" register[%.2d] = %.2d }\n", reg_ind, pc + 2);
     vm->program_counter++;
 }
 

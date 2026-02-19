@@ -91,7 +91,7 @@ int main(void) {
         } break;
 
         default: {
-            printf("default\n");
+            printf("BAD OPCODE, HALTING\n");
             vm.halted = true;
             break;
         }
