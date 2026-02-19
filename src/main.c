@@ -31,6 +31,7 @@ int main(void) {
                            INC, REG_1,
                            JNE, REG_1, REG_9,
                            STATE_DUMP,
+                           PROGRAM_DUMP,
                            HALT};
 
     memcpy(vm.program, loded_program, sizeof(loded_program));
@@ -56,6 +57,10 @@ int main(void) {
 
         case STATE_DUMP: {
             state_dump(&vm);
+        } break;
+
+        case PROGRAM_DUMP: {
+            program_dump(&vm);
         } break;
 
         case MOV: {

@@ -6,6 +6,7 @@
 void no_op(VM *vm);
 void halt(VM *vm);
 void state_dump(VM *vm);
+void program_dump(VM *vm);
 void mov(VM *vm);
 void ld(VM *vm);
 void inc(VM *vm);

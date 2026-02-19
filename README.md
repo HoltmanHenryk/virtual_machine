@@ -12,6 +12,7 @@ In the future i will be implementing a way to assemble human readable code in to
 | NO\_OP |  No operation. | 0 | |
 | HALT   |  Halts the machine. | 0 | |
 | STATE\_DUMP | Prints the value of the registers, program size and program counter | 0 | |
+| PROGRAM\_DUMP | Dumps the current loaded program to 'dumped-program.obj' | 0 | |
 | MOV    |  Moves a value in to a register | 2 | mov %value reg% | 
 | LD     |  Loads the value of a register in to another | 2 | ld reg\_from% reg\_to% |
 | INC    |  Increments the value of a register by 1 | 1 | inc reg% |

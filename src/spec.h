@@ -27,6 +27,7 @@ typedef enum : i32 {
     NO_OP = 0,
     HALT,
     STATE_DUMP,
+    PROGRAM_DUMP,
     MOV,
     LD,
     INC,

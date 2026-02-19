@@ -30,6 +30,24 @@ void state_dump(VM *vm) {
     vm->program_counter++;
 }
 
+void program_dump(VM *vm) {
+    printf("PROGRAM_DUMP: ");
+
+    const char *filename = "dumped-program.obj";
+
+
+    FILE *file = fopen(filename, "w");
+    for(i32 i = 0; i < vm->program_size; ++i) {
+        fprintf(file, "%d ",vm->program[i]);
+    }
+    fclose(file);
+
+    printf("Dumped current program to %s\n", filename);
+
+
+    vm->program_counter++;
+}
+
 void mov(VM *vm) {
 
     printf("MOV: { ");
