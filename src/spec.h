@@ -33,6 +33,7 @@ typedef enum : i32 {
     STO_PC,
     JMP,
     JE,
+    JNE,
 
 } Opcodes;
 

@@ -12,5 +12,6 @@ void inc(VM *vm);
 void sto_pc(VM *vm);
 void jmp(VM *vm);
 void je(VM *vm);
+void jne(VM *vm);
 
 #endif /* OPCODES_H */

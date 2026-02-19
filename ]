@@ -105,18 +105,20 @@ void je(VM *vm) {
     } else {
         printf(" register[%d] != 0; NOT JUMPING } \n", reg_ind);
         vm->program_counter++;
-        vm->program_counter++;
     }
 }
 
 void jne(VM *vm) {
     printf("JNE: {");
+    printf("\n loop start\n");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 cmp_value = vm->registers[reg_ind];
 
+
     if(cmp_value != (i32)0) {
         vm->program_counter++;
+
         i32 reg_jump_ind = vm->program[vm->program_counter];
         i32 jump_to = vm->registers[reg_jump_ind];
         vm->program_counter = jump_to;
@@ -124,7 +126,6 @@ void jne(VM *vm) {
         return;
     } else {
         printf( "register[%d] == 0; NOT JUMPING } \n", reg_ind);
-        vm->program_counter++;
         vm->program_counter++;
     }
 }
