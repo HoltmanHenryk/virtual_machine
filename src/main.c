@@ -19,12 +19,13 @@ int main(void) {
     printf("program_counter = %d\n", vm.program_counter);
 
     
-    i32 loded_program[] = {MOV, -1, REG_5,
+    i32 loded_program[] = {MOV, -1, REG_1,
                            NO_OP,
-                           LD, REG_5, REG_7,
+                           LD, REG_1, REG_2,
                            NO_OP,
-                           INC, REG_5,
                            STO_PC, REG_0,
+                           INC, REG_3,
+                           JE, REG_3, REG_0, 
                            STATE_DUMP,
                            HALT};
 
@@ -71,6 +72,10 @@ int main(void) {
 
         case JMP: {
             jmp(&vm);
+        } break;
+
+        case JE: {
+            je(&vm);
         } break;
 
         default: {

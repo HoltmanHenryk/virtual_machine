@@ -6,7 +6,6 @@
 
 #define MAX_PROGRAM_SIZE 32767
 
-typedef uint32_t u32;
 typedef int32_t i32;
 
 typedef enum : i32 {
@@ -33,15 +32,16 @@ typedef enum : i32 {
     INC,
     STO_PC,
     JMP,
+    JE,
 
 } Opcodes;
 
 typedef struct {
 
-    u32 program_counter;
-    u32 program[MAX_PROGRAM_SIZE];
-    u32 program_size;
-    u32 registers[REG_COUNT];
+    i32 program_counter;
+    i32 program[MAX_PROGRAM_SIZE];
+    i32 program_size;
+    i32 registers[REG_COUNT];
     bool halted;
     bool verbose;
 

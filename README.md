@@ -17,4 +17,4 @@ In the future i will be implementing a way to assemble human readable code in to
 | INC    |  Increments the value of a register by 1 | 1 |
 | STO\_PC | Stores program counter to a register | 1 |
 | JMP | Unconditional jump, sets program counter to value of register | 1 |
-
+| JE | Conditional jump, sets program counter to value of register if value = 0 | 2 |

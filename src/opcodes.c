@@ -1,7 +1,7 @@
 #include "opcodes.h"
 
-#include <stdio.h>
 #include <inttypes.h>
+#include <stdio.h>
 
 void no_op(VM *vm) {
     printf("NO_OP\n");
@@ -20,7 +20,7 @@ void state_dump(VM *vm) {
     printf("##############################\n");
     printf("REGISTERS:\n");
     for (i32 i = 0; i < REG_COUNT; ++i) {
-        printf("        register[%.2d] = %" PRId32 "\n", i, vm->registers[i]);
+        printf("        register[%2d] = %2d\n", i, vm->registers[i]);
     }
     printf("##############################\n");
     printf("MACHINE INFO:\n");
@@ -70,7 +70,7 @@ void inc(VM *vm) {
     printf("\n");
 }
 
-void sto_pc(VM *vm){
+void sto_pc(VM *vm) {
     printf("STO_PC: {");
     i32 pc = vm->program_counter;
     vm->program_counter++;
@@ -87,4 +87,23 @@ void jmp(VM *vm) {
     i32 jmp_to = vm->registers[reg_ind];
     printf(" program_couter -> %.2d }\n", jmp_to);
     vm->program_counter = jmp_to;
+}
+
+void je(VM *vm) {
+    printf("JE: {");
+    vm->program_counter++;
+    i32 reg_ind = vm->program[vm->program_counter];
+    i32 reg_value = vm->registers[reg_ind];
+
+    if(reg_value == (i32)0) {
+        vm->program_counter++;
+        i32 reg_jump_ind = vm->program[vm->program_counter];
+        i32 jump_to = vm->registers[reg_jump_ind];
+        vm->program_counter = jump_to;
+        printf(" register[%d] == 0; jumping program_counter -> %d } \n", reg_ind, vm->program_counter);
+        return;
+    } else {
+        printf(" register[%d] != 0; not jumping } \n", reg_ind);
+    }
+
 }
