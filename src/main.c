@@ -26,6 +26,7 @@ int main(void) {
                            STO_PC, REG_0,
                            INC, REG_3,
                            JE, REG_3, REG_0, 
+                           DEC, REG_3,
                            STO_PC, REG_9,
                            INC, REG_1,
                            JNE, REG_1, REG_9,
@@ -67,6 +68,10 @@ int main(void) {
 
         case INC: {
             inc(&vm);
+        } break;
+
+        case DEC: {
+            dec(&vm);
         } break;
 
         case STO_PC: {

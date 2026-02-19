@@ -30,6 +30,7 @@ typedef enum : i32 {
     MOV,
     LD,
     INC,
+    DEC,
     STO_PC,
     JMP,
     JE,

@@ -70,6 +70,17 @@ void inc(VM *vm) {
     printf("\n");
 }
 
+void dec(VM *vm) {
+    printf("DEC: {");
+    vm->program_counter++;
+    i32 reg_ind = vm->program[vm->program_counter];
+    printf(" register[%d] = %d", reg_ind, vm->registers[reg_ind]);
+    vm->registers[reg_ind]--;
+    printf(" -> %d }", vm->registers[reg_ind]);
+    vm->program_counter++;
+    printf("\n");
+}
+
 void sto_pc(VM *vm) {
     printf("STO_PC: {");
     i32 pc = vm->program_counter;
