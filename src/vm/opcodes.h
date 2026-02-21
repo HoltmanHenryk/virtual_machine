@@ -18,5 +18,6 @@ void je(VM *vm);
 void jne(VM *vm);
 void jge(VM *vm);
 void jle(VM *vm);
+void mul(VM *vm);
 
 #endif /* OPCODES_H */

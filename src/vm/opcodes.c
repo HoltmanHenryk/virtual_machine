@@ -1,10 +1,25 @@
 #include "opcodes.h"
 
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdio.h>
 
+void vm_verbose(VM *vm, const char *format, ...) {
+
+    if (!vm || !vm->verbose) {
+        return;
+    }
+
+    va_list args;
+    va_start(args, format);
+
+    vprintf(format, args);
+
+    va_end(args);
+}
+
 void no_op(VM *vm) {
-    printf("NO_OP\n");
+    vm_verbose(vm, "NO_OP\n");
     vm->program_counter++;
 }
 
@@ -47,67 +62,67 @@ void program_dump(VM *vm) {
 
 void mov(VM *vm) {
 
-    printf("MOV: { ");
+    vm_verbose(vm, "MOV: { ");
     vm->program_counter++;
     i32 tmp = vm->program[vm->program_counter];
-    printf("%d -> ", vm->program[vm->program_counter]);
+    vm_verbose(vm, "%d -> ", vm->program[vm->program_counter]);
     vm->program_counter++;
     vm->registers[vm->program[vm->program_counter]] = tmp;
-    printf("register[%d] }", vm->program[vm->program_counter]);
+    vm_verbose(vm, "register[%d] }", vm->program[vm->program_counter]);
     vm->program_counter++;
-    printf("\n");
+    vm_verbose(vm, "\n");
 }
 
 void ld(VM *vm) {
 
-    printf("LD: {");
+    vm_verbose(vm, "LD: {");
     vm->program_counter++;
     i32 reg_num = vm->program[vm->program_counter];
-    printf(" register[%d] ", reg_num);
+    vm_verbose(vm, " register[%d] ", reg_num);
     i32 value = vm->registers[reg_num];
-    printf("= %d -> ", value);
+    vm_verbose(vm, "= %d -> ", value);
     vm->program_counter++;
     i32 reg_target = vm->program[vm->program_counter];
-    printf("register[%d] }", reg_target);
+    vm_verbose(vm, "register[%d] }", reg_target);
     vm->registers[reg_target] = value;
     vm->program_counter++;
-    printf("\n");
+    vm_verbose(vm, "\n");
 }
 
 void inc(VM *vm) {
-    printf("INC: {");
+    vm_verbose(vm, "INC: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
-    printf(" register[%d] = %d", reg_ind, vm->registers[reg_ind]);
+    vm_verbose(vm, " register[%d] = %d", reg_ind, vm->registers[reg_ind]);
     vm->registers[reg_ind]++;
-    printf(" -> %d }", vm->registers[reg_ind]);
+    vm_verbose(vm, " -> %d }", vm->registers[reg_ind]);
     vm->program_counter++;
-    printf("\n");
+    vm_verbose(vm, "\n");
 }
 
 void dec(VM *vm) {
-    printf("DEC: {");
+    vm_verbose(vm, "DEC: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
-    printf(" register[%d] = %d", reg_ind, vm->registers[reg_ind]);
+    vm_verbose(vm, " register[%d] = %d", reg_ind, vm->registers[reg_ind]);
     vm->registers[reg_ind]--;
-    printf(" -> %d }", vm->registers[reg_ind]);
+    vm_verbose(vm, " -> %d }", vm->registers[reg_ind]);
     vm->program_counter++;
-    printf("\n");
+    vm_verbose(vm, "\n");
 }
 
 void sto_pc(VM *vm) {
-    printf("STO_PC: {");
+    vm_verbose(vm, "STO_PC: {");
     i32 pc = vm->program_counter;
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     vm->registers[reg_ind] = pc + 2; /* pos of the next operation after sto_pc argument */
-    printf(" register[%d] = %d }\n", reg_ind, pc + 2);
+    vm_verbose(vm, " register[%d] = %d }\n", reg_ind, pc + 2);
     vm->program_counter++;
 }
 
 void cmp(VM *vm) {
-    printf("CMP: {");
+    vm_verbose(vm, "CMP: {");
     vm->program_counter++;
 
     i32 arg_a_reg_ind = vm->program[vm->program_counter];
@@ -122,21 +137,21 @@ void cmp(VM *vm) {
 
     if (res < 0) {
         vm->cond_flag = COND_NEGATIVE;
-        printf(" register[%d] < register[%d]; cond: NEGATIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm_verbose(vm, " register[%d] < register[%d]; cond: NEGATIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
         vm->program_counter++;
         return;
     }
 
     if (res == 0) {
         vm->cond_flag = COND_ZERO;
-        printf(" register[%d] == register[%d]; cond: ZERO }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm_verbose(vm, " register[%d] == register[%d]; cond: ZERO }\n", arg_a_reg_ind, arg_b_reg_ind);
         vm->program_counter++;
         return;
     }
 
     if (res > 0) {
         vm->cond_flag = COND_POSITIVE;
-        printf(" register[%d] > register[%d]; cond: POSITIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm_verbose(vm, " register[%d] > register[%d]; cond: POSITIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
         vm->program_counter++;
         return;
     }
@@ -145,82 +160,85 @@ void cmp(VM *vm) {
 }
 
 void jmp(VM *vm) {
-    printf("JMP: {");
+    vm_verbose(vm, "JMP: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jmp_to = vm->registers[reg_ind];
-    printf(" program_couter -> %.2d }\n", jmp_to);
+    vm_verbose(vm, " program_couter -> %.2d }\n", jmp_to);
     vm->program_counter = jmp_to;
 }
 
 void je(VM *vm) {
-    printf("JE: {");
+    vm_verbose(vm, "JE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
     if (vm->cond_flag == COND_ZERO) {
-        printf(" cond: == 0; JUMPING }\n");
+        vm_verbose(vm, " cond: == 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        printf(" cond != 0; NOT JUMPING }\n");
+        vm_verbose(vm, " cond != 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
 }
 
 void jne(VM *vm) {
-    printf("JNE: {");
+    vm_verbose(vm, "JNE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
     if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_POSITIVE) {
-        printf(" cond: != 0; JUMPING }\n");
+        vm_verbose(vm, " cond: != 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        printf(" cond: == 0; NOT JUMPING }\n");
+        vm_verbose(vm, " cond: == 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
 }
 
 void jge(VM *vm) {
-    printf("JGE: {");
+    vm_verbose(vm, "JGE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
     if (vm->cond_flag == COND_POSITIVE || vm->cond_flag == COND_ZERO) {
-        printf(" cond >= 0; JUMPING }\n");
+        vm_verbose(vm, " cond >= 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        printf("cond < 0; NOT JUMPING }\n");
+        vm_verbose(vm, "cond < 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
 }
 
 void jle(VM *vm) {
-    printf("JLE: {");
+    vm_verbose(vm, "JLE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
     if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_ZERO) {
-        printf(" cond <= 0; JUMPING }\n");
+        vm_verbose(vm, " cond <= 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        printf(" cond > 0; NOT JUMPING }\n");
+        vm_verbose(vm, " cond > 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
+}
+
+void mul(VM *vm) {
 }
