@@ -20,7 +20,64 @@ Will result in the following bynaries being generated:
 
 ## Examples:
 
-This still a work in progress, please refer to `example_programs/` directory for info for now.
+Please refer to `example_programs/` directory for info for now.
+
+### Example program:
+
+Minimal program that makes a loop by incrementing a value and comparing it until its bigger than the compared value
+
+```asm
+mov 10, %10
+sto_pc %0
+inc %1
+cmp %1, %10
+jle %0
+state_dump
+halt
+```
+save this to `my_program.asm`
+
+Assemble it with:
+```shell 
+./vmasm my_program.asm -o my_bytecode.obj
+```
+
+Then run the interpreter:
+```shell
+./vm my_bytecode.obj
+```
+
+The second to last instruction (`state_dump`) prints some info about the registers to the screen, it should look something like this:
+<details closed>
+<summary>`state_dump output`</summary>
+```raw
+STATE_DUMP:
+##############################
+REGISTERS:
+        register[ 0] =  5
+        register[ 1] = 11
+        register[ 2] =  0
+        register[ 3] =  0
+        register[ 4] =  0
+        register[ 5] =  0
+        register[ 6] =  0
+        register[ 7] =  0
+        register[ 8] =  0
+        register[ 9] =  0
+        register[10] = 10
+##############################
+MACHINE INFO:
+        program_couter  = 12
+        program_size    = 14
+        condition_flag  = 1
+##############################
+```
+</details>
+
+Now take a look at your compiled object code by running:
+```shell
+./disasm my_bytecode.obj
+```
 
 ## Documentation
 
