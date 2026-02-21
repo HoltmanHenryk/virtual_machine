@@ -32,18 +32,15 @@ void state_dump(VM *vm) {
 }
 
 void program_dump(VM *vm) {
-    printf("PROGRAM_DUMP: ");
+    printf("PROGRAM_DUMP:\n");
 
-    const char *filename = "dumped-program.obj";
+    const char *rawdump = "dumped-program.obj";
 
-
-    FILE *file = fopen(filename, "wb");
-    for(i32 i = 0; i < vm->program_size; ++i) {
-        fprintf(file, "%08" PRIx32 " " ,vm->program[i]);
-    }
+    FILE *file = fopen(rawdump, "wb");
+    fwrite(vm->program, sizeof(i32), vm->program_size, file);
     fclose(file);
 
-    printf("Dumped current program to %s\n", filename);
+    printf("    Dumped loaded program bytecode to %s\n", rawdump);
 
     vm->program_counter++;
 }
@@ -162,8 +159,7 @@ void je(VM *vm) {
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
-
-    if(vm->cond_flag == COND_ZERO) {
+    if (vm->cond_flag == COND_ZERO) {
         printf(" cond: == 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
@@ -173,7 +169,6 @@ void je(VM *vm) {
         vm->program_counter++;
         return;
     }
-
 }
 
 void jne(VM *vm) {
@@ -182,7 +177,7 @@ void jne(VM *vm) {
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
-    if(vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_POSITIVE) {
+    if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_POSITIVE) {
         printf(" cond: != 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
@@ -192,7 +187,6 @@ void jne(VM *vm) {
         vm->program_counter++;
         return;
     }
-
 }
 
 void jge(VM *vm) {
@@ -201,13 +195,13 @@ void jge(VM *vm) {
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
-    if(vm->cond_flag == COND_POSITIVE || vm->cond_flag == COND_ZERO) {
+    if (vm->cond_flag == COND_POSITIVE || vm->cond_flag == COND_ZERO) {
         printf(" cond >= 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        printf( "cond < 0; NOT JUMPING }\n");
+        printf("cond < 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
@@ -219,7 +213,7 @@ void jle(VM *vm) {
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
-    if(vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_ZERO) {
+    if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_ZERO) {
         printf(" cond <= 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;

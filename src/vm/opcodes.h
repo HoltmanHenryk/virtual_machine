@@ -1,7 +1,7 @@
 #ifndef OPCODES_H
 #define OPCODES_H
 
-#include "spec.h"
+#include "../spec.h"
 
 void no_op(VM *vm);
 void halt(VM *vm);
