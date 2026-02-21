@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "../spec.h"
@@ -19,18 +19,18 @@ int main(int argc, char **argv) {
     const char *program_file_path = argv[1];
 
     FILE *file = fopen(program_file_path, "rb");
-    if(!file) {
+    if (!file) {
         perror("Error oppening file.");
         exit(1);
     }
-    
+
     i32 loaded_program[MAX_PROGRAM_SIZE];
 
     size_t loaded_program_size = fread(loaded_program, sizeof(i32), MAX_PROGRAM_SIZE, file);
     fclose(file);
 
     VM vm = {};
-    
+
     memcpy(vm.program, loaded_program, sizeof(loaded_program));
 
     vm.program_size = (i32)loaded_program_size;
@@ -102,6 +102,26 @@ int main(int argc, char **argv) {
 
         case JLE: {
             jle(&vm);
+        } break;
+
+        case ADD: {
+            add(&vm);
+        } break;
+
+        case SUB: {
+            sub(&vm);
+        } break;
+
+        case MUL: {
+            mul(&vm);
+        } break;
+
+        case DIV: {
+            div_(&vm);
+        } break;
+
+        case MOD: {
+            mod(&vm);
         } break;
 
         default: {

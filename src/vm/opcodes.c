@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-void vm_verbose(VM *vm, const char *format, ...) {
+void vm_verbose_(VM *vm, const char *format, ...) {
 
     if (!vm || !vm->verbose) {
         return;
@@ -18,8 +18,10 @@ void vm_verbose(VM *vm, const char *format, ...) {
     va_end(args);
 }
 
+#define vm_verbose(fmt, ...) vm_verbose_(vm, (fmt), ##__VA_ARGS__)
+
 void no_op(VM *vm) {
-    vm_verbose(vm, "NO_OP\n");
+    vm_verbose("NO_OP\n");
     vm->program_counter++;
 }
 
@@ -62,67 +64,67 @@ void program_dump(VM *vm) {
 
 void mov(VM *vm) {
 
-    vm_verbose(vm, "MOV: { ");
+    vm_verbose("MOV: { ");
     vm->program_counter++;
     i32 tmp = vm->program[vm->program_counter];
-    vm_verbose(vm, "%d -> ", vm->program[vm->program_counter]);
+    vm_verbose("%d -> ", vm->program[vm->program_counter]);
     vm->program_counter++;
     vm->registers[vm->program[vm->program_counter]] = tmp;
-    vm_verbose(vm, "register[%d] }", vm->program[vm->program_counter]);
+    vm_verbose("register[%d] }", vm->program[vm->program_counter]);
     vm->program_counter++;
-    vm_verbose(vm, "\n");
+    vm_verbose("\n");
 }
 
 void ld(VM *vm) {
 
-    vm_verbose(vm, "LD: {");
+    vm_verbose("LD: {");
     vm->program_counter++;
     i32 reg_num = vm->program[vm->program_counter];
-    vm_verbose(vm, " register[%d] ", reg_num);
+    vm_verbose(" register[%d] ", reg_num);
     i32 value = vm->registers[reg_num];
-    vm_verbose(vm, "= %d -> ", value);
+    vm_verbose("= %d -> ", value);
     vm->program_counter++;
     i32 reg_target = vm->program[vm->program_counter];
-    vm_verbose(vm, "register[%d] }", reg_target);
+    vm_verbose("register[%d] }", reg_target);
     vm->registers[reg_target] = value;
     vm->program_counter++;
-    vm_verbose(vm, "\n");
+    vm_verbose("\n");
 }
 
 void inc(VM *vm) {
-    vm_verbose(vm, "INC: {");
+    vm_verbose("INC: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
-    vm_verbose(vm, " register[%d] = %d", reg_ind, vm->registers[reg_ind]);
+    vm_verbose(" register[%d] = %d", reg_ind, vm->registers[reg_ind]);
     vm->registers[reg_ind]++;
-    vm_verbose(vm, " -> %d }", vm->registers[reg_ind]);
+    vm_verbose(" -> %d }", vm->registers[reg_ind]);
     vm->program_counter++;
-    vm_verbose(vm, "\n");
+    vm_verbose("\n");
 }
 
 void dec(VM *vm) {
-    vm_verbose(vm, "DEC: {");
+    vm_verbose("DEC: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
-    vm_verbose(vm, " register[%d] = %d", reg_ind, vm->registers[reg_ind]);
+    vm_verbose(" register[%d] = %d", reg_ind, vm->registers[reg_ind]);
     vm->registers[reg_ind]--;
-    vm_verbose(vm, " -> %d }", vm->registers[reg_ind]);
+    vm_verbose(" -> %d }", vm->registers[reg_ind]);
     vm->program_counter++;
-    vm_verbose(vm, "\n");
+    vm_verbose("\n");
 }
 
 void sto_pc(VM *vm) {
-    vm_verbose(vm, "STO_PC: {");
+    vm_verbose("STO_PC: {");
     i32 pc = vm->program_counter;
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     vm->registers[reg_ind] = pc + 2; /* pos of the next operation after sto_pc argument */
-    vm_verbose(vm, " register[%d] = %d }\n", reg_ind, pc + 2);
+    vm_verbose(" register[%d] = %d }\n", reg_ind, pc + 2);
     vm->program_counter++;
 }
 
 void cmp(VM *vm) {
-    vm_verbose(vm, "CMP: {");
+    vm_verbose("CMP: {");
     vm->program_counter++;
 
     i32 arg_a_reg_ind = vm->program[vm->program_counter];
@@ -137,21 +139,21 @@ void cmp(VM *vm) {
 
     if (res < 0) {
         vm->cond_flag = COND_NEGATIVE;
-        vm_verbose(vm, " register[%d] < register[%d]; cond: NEGATIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm_verbose(" register[%d] < register[%d]; cond: NEGATIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
         vm->program_counter++;
         return;
     }
 
     if (res == 0) {
         vm->cond_flag = COND_ZERO;
-        vm_verbose(vm, " register[%d] == register[%d]; cond: ZERO }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm_verbose(" register[%d] == register[%d]; cond: ZERO }\n", arg_a_reg_ind, arg_b_reg_ind);
         vm->program_counter++;
         return;
     }
 
     if (res > 0) {
         vm->cond_flag = COND_POSITIVE;
-        vm_verbose(vm, " register[%d] > register[%d]; cond: POSITIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
+        vm_verbose(" register[%d] > register[%d]; cond: POSITIVE }\n", arg_a_reg_ind, arg_b_reg_ind);
         vm->program_counter++;
         return;
     }
@@ -160,85 +162,187 @@ void cmp(VM *vm) {
 }
 
 void jmp(VM *vm) {
-    vm_verbose(vm, "JMP: {");
+    vm_verbose("JMP: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jmp_to = vm->registers[reg_ind];
-    vm_verbose(vm, " program_couter -> %.2d }\n", jmp_to);
+    vm_verbose(" program_couter -> %.2d }\n", jmp_to);
     vm->program_counter = jmp_to;
 }
 
 void je(VM *vm) {
-    vm_verbose(vm, "JE: {");
+    vm_verbose("JE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
     if (vm->cond_flag == COND_ZERO) {
-        vm_verbose(vm, " cond: == 0; JUMPING }\n");
+        vm_verbose(" cond: == 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        vm_verbose(vm, " cond != 0; NOT JUMPING }\n");
+        vm_verbose(" cond != 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
 }
 
 void jne(VM *vm) {
-    vm_verbose(vm, "JNE: {");
+    vm_verbose("JNE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
     if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_POSITIVE) {
-        vm_verbose(vm, " cond: != 0; JUMPING }\n");
+        vm_verbose(" cond: != 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        vm_verbose(vm, " cond: == 0; NOT JUMPING }\n");
+        vm_verbose(" cond: == 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
 }
 
 void jge(VM *vm) {
-    vm_verbose(vm, "JGE: {");
+    vm_verbose("JGE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
     if (vm->cond_flag == COND_POSITIVE || vm->cond_flag == COND_ZERO) {
-        vm_verbose(vm, " cond >= 0; JUMPING }\n");
+        vm_verbose(" cond >= 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        vm_verbose(vm, "cond < 0; NOT JUMPING }\n");
+        vm_verbose("cond < 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
 }
 
 void jle(VM *vm) {
-    vm_verbose(vm, "JLE: {");
+    vm_verbose("JLE: {");
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 jump_to = vm->registers[reg_ind];
 
     if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_ZERO) {
-        vm_verbose(vm, " cond <= 0; JUMPING }\n");
+        vm_verbose(" cond <= 0; JUMPING }\n");
         vm->program_counter = jump_to;
         return;
 
     } else {
-        vm_verbose(vm, " cond > 0; NOT JUMPING }\n");
+        vm_verbose(" cond > 0; NOT JUMPING }\n");
         vm->program_counter++;
         return;
     }
 }
 
+void add(VM *vm) {
+    vm_verbose("ADD: {");
+
+    vm->program_counter++;
+    i32 reg_a_ind = vm->program[vm->program_counter];
+    i32 reg_a = vm->registers[reg_a_ind];
+
+    vm->program_counter++;
+    i32 reg_b_ind = vm->program[vm->program_counter];
+    i32 reg_b = vm->registers[reg_b_ind];
+
+    vm_verbose(" reg[%d] + reg[%d] | ", reg_a_ind, reg_b_ind);
+
+    i32 result = reg_a + reg_b;
+    vm_verbose(" %d + %d = %d }\n", reg_a, reg_b, result);
+
+    vm->registers[reg_a_ind] = result;
+
+    vm->program_counter++;
+}
+
+void sub(VM *vm) {
+    vm_verbose("SUB: {");
+
+    vm->program_counter++;
+    i32 reg_a_ind = vm->program[vm->program_counter];
+    i32 reg_a = vm->registers[reg_a_ind];
+
+    vm->program_counter++;
+    i32 reg_b_ind = vm->program[vm->program_counter];
+    i32 reg_b = vm->registers[reg_b_ind];
+
+    vm_verbose(" reg[%d] - reg[%d] | ", reg_a_ind, reg_b_ind);
+
+    i32 result = reg_a - reg_b;
+    vm_verbose(" %d - %d = %d }\n", reg_a, reg_b, result);
+
+    vm->registers[reg_a_ind] = result;
+
+    vm->program_counter++;
+}
+
 void mul(VM *vm) {
+    vm_verbose("MUL: {");
+
+    vm->program_counter++;
+    i32 reg_a_ind = vm->program[vm->program_counter];
+    i32 reg_a = vm->registers[reg_a_ind];
+
+    vm->program_counter++;
+    i32 reg_b_ind = vm->program[vm->program_counter];
+    i32 reg_b = vm->registers[reg_b_ind];
+
+    vm_verbose(" reg[%d] * reg[%d] | ", reg_a_ind, reg_b_ind);
+
+    i32 result = reg_a * reg_b;
+    vm_verbose(" %d * %d = %d }\n", reg_a, reg_b, result);
+
+    vm->registers[reg_a_ind] = result;
+
+    vm->program_counter++;
+}
+
+void div_(VM *vm) {
+    vm_verbose("DIV: {");
+
+    vm->program_counter++;
+    i32 reg_a_ind = vm->program[vm->program_counter];
+    i32 reg_a = vm->registers[reg_a_ind];
+
+    vm->program_counter++;
+    i32 reg_b_ind = vm->program[vm->program_counter];
+    i32 reg_b = vm->registers[reg_b_ind];
+
+    vm_verbose(" reg[%d] / reg[%d] | ", reg_a_ind, reg_b_ind);
+
+    i32 result = reg_a  / reg_b;
+    vm_verbose(" %d / %d = %d }\n", reg_a, reg_b, result);
+
+    vm->registers[reg_a_ind] = result;
+
+    vm->program_counter++;
+}
+
+void mod(VM *vm) {
+    vm_verbose("MOD: {");
+
+    vm->program_counter++;
+    i32 reg_a_ind = vm->program[vm->program_counter];
+    i32 reg_a = vm->registers[reg_a_ind];
+
+    vm->program_counter++;
+    i32 reg_b_ind = vm->program[vm->program_counter];
+    i32 reg_b = vm->registers[reg_b_ind];
+
+    vm_verbose(" reg[%d] %% reg[%d] | ", reg_a_ind, reg_b_ind);
+
+    i32 result = reg_a % reg_b;
+    vm_verbose(" %d %% %d = %d }\n", reg_a, reg_b, result);
+
+    vm->registers[reg_a_ind] = result;
+
+    vm->program_counter++;
 }

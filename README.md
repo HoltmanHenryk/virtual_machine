@@ -99,6 +99,11 @@ Now take a look at your compiled object code by running:
 | JNE | Jump if not equals. Jumps program counter to value of register if last CMP instruction yielded anything other than ZERO| 1 |jne %reg\_jumpTo| 
 | JGE | Jump if greater or equals. Jumps the program counter to the value of register if the last CMP instruction yielded ZERO or POSITIVE | 1 | jge %reg\_jumpTo|
 | JLE | Jump if less or equals. Jumps the program counter to the value of register if the last CMP instruction yielded NEGATIVE or ZERO| 1 | jle %reg\_jumpTo |
+| ADD | Adds reg\_a and reg\_b, stores result to reg\_a | 2 | add %reg\_a %reg\_b |
+| SUB | Subtract reg\_a and reg\_b, stores result to reg\_a | 2 | sub %reg\_a %reg\_b |
+| MUL | Multiply reg\_a and reg\_b, stores result to reg\_a | 2 | mul %reg\_a %reg\_b |
+| DIV | Divide reg\_a and reg\_b, stores result to reg\_a | 2 | div %reg\_a %reg\_b |
+| MOD | Gives division remainder (modulo) of reg\_a and reg\_b, stores result to reg\_a | 2 | mod %reg\_a %reg\_b |
 
 - %reg = register index (Ex: %1, %2, %10)
 - %value = any signed 32 Bit number (int32\_t)

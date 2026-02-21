@@ -40,7 +40,11 @@ typedef enum : i32 {
     JNE,
     JGE,
     JLE,
+    ADD,
+    SUB,
     MUL,
+    DIV,
+    MOD,
 
     OPCODE_COUNT
 } Opcodes;
@@ -81,7 +85,11 @@ static const Instruction_spec ASSEMBLY_TABLE[] = {
     [JNE]          =  { "jne", 1,          { ARG_REG}},
     [JGE]          =  { "jge", 1,          { ARG_REG}},
     [JLE]          =  { "jle", 1,          { ARG_REG}},
+    [ADD]          =  { "add", 2,          { ARG_REG, ARG_REG}},
+    [SUB]          =  { "sub", 2,          { ARG_REG, ARG_REG}},
     [MUL]          =  { "mul", 2,          { ARG_REG, ARG_REG}},
+    [DIV]          =  { "div", 2,          { ARG_REG, ARG_REG}},
+    [MOD]          =  { "mod", 2,          { ARG_REG, ARG_REG}},
 };
 
 // :Tabularize /[={]
