@@ -27,15 +27,16 @@ Please refer to `example_programs/` directory for more info for now.
 Minimal program that makes a loop by incrementing a value and comparing it until its bigger than the compared value
 
 ```asm
+# you can leave comments with a hash 
 mov 10, $10
-sto_pc $0
+sto_pc %0
+# you can adress registers with both '%' and '$'
 inc $1
 cmp $1, $10
 jle $0
 state_dump
 halt
 ```
-Note: Both % and $ can be used to specify registers.
 
 save this to `my_program.asm`
 
@@ -52,7 +53,6 @@ Then run the interpreter:
 The second to last instruction (`state_dump`) prints some info about the registers to the screen, it should look something like this:
 <details closed>
 <summary>`state_dump output`</summary>
-
 
 
 ```raw
