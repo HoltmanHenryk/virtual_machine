@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
                     }
 
                     if (ASSEMBLY_TABLE[i].arg_types[j] == ARG_REG) {
-                        if (token[0] == '%') {
+                        if (token[0] == '%' || token[0] == '$') {
                             if (token[1] == '\0') {
                                 fprintf(stderr, "Error: empty register name '%%'\n");
                                 exit(1);
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
                                 exit(1);
                             }
                         } else {
-                            fprintf(stderr, "Error: expected prefix '%%' for register, found '%s'.\n", token);
+                            fprintf(stderr, "Error: expected prefix '%%' or '$' for register, found '%s'.\n", token);
                             exit(1);
                         }
                     } else if (ASSEMBLY_TABLE[i].arg_types[j] == ARG_VAL) {
