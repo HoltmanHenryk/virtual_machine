@@ -164,8 +164,7 @@ void cmp(VM *vm) {
 void jmp(VM *vm) {
     vm_verbose("JMP: {");
     vm->program_counter++;
-    i32 reg_ind = vm->program[vm->program_counter];
-    i32 jmp_to = vm->registers[reg_ind];
+    i32 jmp_to = vm->program[vm->program_counter];
     vm_verbose(" program_couter -> %.2d }\n", jmp_to);
     vm->program_counter = jmp_to;
 }
@@ -173,8 +172,7 @@ void jmp(VM *vm) {
 void je(VM *vm) {
     vm_verbose("JE: {");
     vm->program_counter++;
-    i32 reg_ind = vm->program[vm->program_counter];
-    i32 jump_to = vm->registers[reg_ind];
+    i32 jump_to = vm->program[vm->program_counter];
 
     if (vm->cond_flag == COND_ZERO) {
         vm_verbose(" cond: == 0; JUMPING }\n");
@@ -191,8 +189,7 @@ void je(VM *vm) {
 void jne(VM *vm) {
     vm_verbose("JNE: {");
     vm->program_counter++;
-    i32 reg_ind = vm->program[vm->program_counter];
-    i32 jump_to = vm->registers[reg_ind];
+    i32 jump_to = vm->program[vm->program_counter];
 
     if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_POSITIVE) {
         vm_verbose(" cond: != 0; JUMPING }\n");
@@ -209,8 +206,7 @@ void jne(VM *vm) {
 void jge(VM *vm) {
     vm_verbose("JGE: {");
     vm->program_counter++;
-    i32 reg_ind = vm->program[vm->program_counter];
-    i32 jump_to = vm->registers[reg_ind];
+    i32 jump_to = vm->program[vm->program_counter];
 
     if (vm->cond_flag == COND_POSITIVE || vm->cond_flag == COND_ZERO) {
         vm_verbose(" cond >= 0; JUMPING }\n");
@@ -227,8 +223,7 @@ void jge(VM *vm) {
 void jle(VM *vm) {
     vm_verbose("JLE: {");
     vm->program_counter++;
-    i32 reg_ind = vm->program[vm->program_counter];
-    i32 jump_to = vm->registers[reg_ind];
+    i32 jump_to = vm->program[vm->program_counter];
 
     if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_ZERO) {
         vm_verbose(" cond <= 0; JUMPING }\n");

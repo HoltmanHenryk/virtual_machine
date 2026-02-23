@@ -80,11 +80,11 @@ static const Instruction_spec ASSEMBLY_TABLE[] = {
     [DEC]          =  { "dec", 1,          { ARG_REG}},
     [STO_PC]       =  { "sto_pc", 1,       { ARG_REG}},
     [CMP]          =  { "cmp", 2,          { ARG_REG, ARG_REG}},
-    [JMP]          =  { "jmp", 1,          { ARG_REG}},
-    [JE]           =  { "je", 1,           { ARG_REG}},
-    [JNE]          =  { "jne", 1,          { ARG_REG}},
-    [JGE]          =  { "jge", 1,          { ARG_REG}},
-    [JLE]          =  { "jle", 1,          { ARG_REG}},
+    [JMP]          =  { "jmp", 1,          { ARG_VAL}},
+    [JE]           =  { "je", 1,           { ARG_VAL}},
+    [JNE]          =  { "jne", 1,          { ARG_VAL}},
+    [JGE]          =  { "jge", 1,          { ARG_VAL}},
+    [JLE]          =  { "jle", 1,          { ARG_VAL}},
     [ADD]          =  { "add", 2,          { ARG_REG, ARG_REG}},
     [SUB]          =  { "sub", 2,          { ARG_REG, ARG_REG}},
     [MUL]          =  { "mul", 2,          { ARG_REG, ARG_REG}},
@@ -94,8 +94,6 @@ static const Instruction_spec ASSEMBLY_TABLE[] = {
 
 // :Tabularize /[={]
 // align by "="  and "{"
-
-
 
 static_assert((sizeof(ASSEMBLY_TABLE) / sizeof(ASSEMBLY_TABLE[0])) == OPCODE_COUNT,
               "Error: ASSEMBLY_TABLE must contain all elements of the OPCODES table");

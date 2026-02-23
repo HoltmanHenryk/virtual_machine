@@ -1,7 +1,7 @@
 .PHONY: clear clean
 
 CC := gcc
-CFLAGS := -Wall -Wextra -static -std=c11 -ggdb
+CFLAGS := -Wall -Wextra -static -std=c23 -ggdb
 
 GLOBAL_DEPS = src/spec.h
 
