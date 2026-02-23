@@ -1,3 +1,5 @@
+// this leaks memory like crazy xd
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -63,7 +65,7 @@ int main(int argc, char **argv) {
     fclose(file);
 
     const char *tokenizer_split = " ,\t\n\r";
-    char *token = strtok(buffer, tokenizer_split);
+    char *token;
     Label symbol_table[1024];
     int label_count = 0;
     i32 program_buffer[MAX_PROGRAM_SIZE];
@@ -74,7 +76,7 @@ int main(int argc, char **argv) {
 
     // 1st pass: fill symbol table
 
-    token = strtok(buffer, tokenizer_split);
+    token = strtok(buffer_copy, tokenizer_split);
 
     while (token != NULL) {
 
@@ -115,7 +117,6 @@ int main(int argc, char **argv) {
 
         token = strtok(NULL, tokenizer_split);
     }
-    free(buffer_copy);
 
     // 2nd pass; actually generate the bytecode now
 
@@ -137,12 +138,12 @@ int main(int argc, char **argv) {
         }
 
         bool found_opcode = false;
-        
+
         // instructions
         for (i32 i = 0; i < OPCODE_COUNT; ++i) {
             if (strcmp(token, ASSEMBLY_TABLE[i].name) == 0) {
                 found_opcode = true;
-                program_buffer[head_pos++] = i; 
+                program_buffer[head_pos++] = i;
 
                 const char *current_instr_name = ASSEMBLY_TABLE[i].name;
 
@@ -174,7 +175,7 @@ int main(int argc, char **argv) {
 
                         // labels start with '.'
                         if (token[0] == '.') {
-                            const char *label_to_find = token + 1; 
+                            const char *label_to_find = token + 1;
                             bool label_found = false;
 
                             for (int l = 0; l < label_count; ++l) {
@@ -224,6 +225,16 @@ int main(int argc, char **argv) {
     }
 
     fwrite(program_buffer, sizeof(i32), head_pos, output_file);
+
+    /*
+    printf("--- DEBUG: BYTECODE GENERATED ---\n");
+    for (size_t i = 0; i < head_pos; i++) {
+        printf(
+
+            "[%03zu] %d\n", i, program_buffer[i]);
+    }
+    printf("------------------------------\n");
+    */
 
     fclose(output_file);
     free(buffer);
