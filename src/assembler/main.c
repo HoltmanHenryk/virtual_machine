@@ -63,6 +63,12 @@ int main(int argc, char **argv) {
     size_t head_pos = 0;
 
     while (token != NULL) {
+
+        if (token[0] == '#') {
+            token = strtok(NULL, "\n");
+            token = strtok(NULL, tokenizer_split);
+        }
+
         bool found = false;
 
         for (i32 i = 0; i < OPCODE_COUNT; ++i) {
