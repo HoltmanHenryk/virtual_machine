@@ -59,7 +59,6 @@ The second to last instruction (`state_dump`) prints some info about the registe
 STATE_DUMP:
 ##############################
 REGISTERS:
-        register[ 0] =  5
         register[ 1] = 11
 [...]
         register[10] = 10
