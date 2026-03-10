@@ -1,10 +1,12 @@
 // this leaks memory like crazy xd
 
+#include <linux/limits.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../spec.h"
 
@@ -22,7 +24,35 @@ char *strdup_vm(const char *s) {
     return result;
 }
 
+void run_after_compile(const char *out_file) {
 
+    char exe_path[1024];
+    char vm_path[1024 + 4];
+
+    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+
+    if (len == -1) {
+        fprintf(stderr, "readlink error\n");
+        return;
+    }
+
+    exe_path[len] = '\0';
+
+    char *last_slash = strrchr(exe_path, '/');
+
+    if (last_slash != NULL) {
+        *last_slash = '\0';
+    }
+
+    snprintf(vm_path, sizeof(vm_path), "%s/vm", exe_path);
+
+    char *args[] = {vm_path, (char *)out_file, NULL};
+
+    execv(vm_path, args);
+
+    fprintf(stderr, "if you got here, execv failed misarably\n");
+    exit(1);
+}
 
 typedef struct {
     char *name;
@@ -33,11 +63,13 @@ int main(int argc, char **argv) {
 
     char *input_path = NULL;
     // default to out.obj if not specified
-    char *output_path = "out.obj";
+    char *output_path = "out.bin";
+
+    bool run_flag = false;
 
     if (argc < 2) {
         printf("Usage: %s <input file> [-o <output>]\n", argv[0]);
-        printf("Options:\n  -o: specify output path, otherwise 'out.obj'\n");
+        printf("Options:\n  -o: specify output path, otherwise 'out.bin'\n");
         exit(1);
     }
 
@@ -49,6 +81,9 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Error: -o needs a file path to be specified.\n");
                 exit(1);
             }
+        } else if (strcmp(argv[i], "-run") == 0) {
+            run_flag = true;
+
         } else if (argv[i][0] != '-') {
             input_path = argv[i];
         }
@@ -197,7 +232,7 @@ int main(int argc, char **argv) {
                                 bool reg_found = false;
 
                                 for (size_t r = 0; r < NAMED_REGISTER_COUNT; ++r) {
-                                    if(strcmp(reg_name, NAMED_REGISTERS[r].name) == 0) {
+                                    if (strcmp(reg_name, NAMED_REGISTERS[r].name) == 0) {
                                         program_buffer[head_pos++] = NAMED_REGISTERS[r].reg_idx;
                                         reg_found = true;
                                         break;
@@ -208,9 +243,7 @@ int main(int argc, char **argv) {
                                     fprintf(stderr, "Error: unknown named register '$%s'\n", reg_name);
                                     exit(1);
                                 }
-
                             }
-
 
                         } else {
                             fprintf(stderr, "Error: expected '$' for register, found '%s'\n", token);
@@ -285,6 +318,8 @@ int main(int argc, char **argv) {
 
     fclose(output_file);
     free(buffer);
+
+    if (run_flag) run_after_compile(output_path);
 
     return 0;
 }

@@ -1,7 +1,7 @@
 .PHONY: clear clean
 
 CC := gcc
-CFLAGS := -Wall -Wextra -static -std=c11 -ggdb
+CFLAGS := -Wall -Wextra -static -std=gnu11 -ggdb
 
 GLOBAL_DEPS = src/spec.h
 
@@ -42,4 +42,4 @@ build/assemble/main.o: src/assembler/main.c ${GLOBAL_DEPS}
 clean: clear
 
 clear:
-	rm -f *.obj disassembled.asm vm vmasm disasm build/vm/*.o build/disassemble/*.o build/assemble/*.o
+	rm -f *.obj *.bin disassembled.asm vm vmasm disasm build/vm/*.o build/disassemble/*.o build/assemble/*.o

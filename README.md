@@ -22,7 +22,7 @@ make
 Will result in the following bynaries:
 - `vm`: the interpreter / runs the bynaries / bytecode.
 - `vmasm`: the assembler / turns our assembly files in to bytecode for the vm.
-- `disasm`: the disassembler / allows you to peek inside the `.obj` files, and see a approximation of their pre-assembled code
+- `disasm`: the disassembler / allows you to peek inside the `.bin` files, and see a approximation of their pre-assembled code
 
 ## Examples:
 
@@ -31,6 +31,8 @@ Please refer to `example_programs/` directory for more in depth info
 ### Example program:
 
 Minimal program that makes a loop by incrementing a value and comparing it until its bigger than the compared value
+
+Starting at the root of the project;
 
 ```asm 
 # you can leave comments with a hash 
@@ -48,13 +50,22 @@ save this to `my_program.asm`
 
 Assemble it with:
 ```shell 
-./vmasm my_program.asm -o my_bytecode.obj
+./vmasm my_program.asm -o my_bytecode.bin
 ```
+
 
 Then run the interpreter:
 ```shell
-./vm my_bytecode.obj
+./vm my_bytecode.bin
 ```
+
+Alternatively use the `-run` flag on the assembler
+```shell 
+./vmasm my_program.asm -run
+```
+- (This will leave a `out.bin` file) 
+- (This expects the `vm` binary to be in the same directory as `vmasm`)
+- (Alternatively, you can use a `shebang` at the start of the `.asm` file, by adding `#!./vmasm -run` and giving execute permisison to the script)
 
 The second to last instruction (`state_dump`) prints some info about the registers to the screen, it should look something like this:
 <details closed>

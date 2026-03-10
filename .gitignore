@@ -3,6 +3,7 @@ disasm
 vmasm
 disassembled.asm
 *.obj
+*.bin
 
 !*/
 
