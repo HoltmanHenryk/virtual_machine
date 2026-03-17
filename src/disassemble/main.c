@@ -6,17 +6,25 @@
 
 #include "../spec.h"
 
-void disassemble_data_section(i32 *buffer, i32 data_size, FILE *out) {
+void disassemble_data_section(i32 *buffer, i32 data_size, FILE *out, bool clean) {
     if (data_size <= 0) return;
     
-    fprintf(out, "\n=== DATA SECTION (size: %d bytes) ===\n\n", data_size);
+    if(!clean)
+        fprintf(out, "\n=== DATA SECTION (%d bytes) ===\n\n", data_size);
     
     i32 i = 0;
     while (i < data_size) {
+
+        if(clean) { fprintf(out, "# "); }
         fprintf(out, "0x%04x(%4d): ", i, i);
+        if(clean) { fprintf(out, "\n"); }
+
         
         // try to print as printable ASCII string
         int string_len = 0;
+
+        if(clean) { fprintf(out, "\""); }
+
         while (i + string_len < data_size && buffer[i + string_len] != 0) {
             i32 c = buffer[i + string_len];
             if (c >= 32 && c < 127) {
@@ -26,11 +34,14 @@ void disassemble_data_section(i32 *buffer, i32 data_size, FILE *out) {
                 break;
             }
         }
+
+
+        if(clean) { fprintf(out, "\"\n"); }
         
         if (string_len > 0) {
             i += string_len;
             if (i < data_size && buffer[i] == 0) {
-                fprintf(out, "\\0\n");
+                if(!clean) fprintf(out, "\\0\n");
                 i++;
             }
         } else {
@@ -47,7 +58,7 @@ void disassemble_program(i32 *buffer, i32 program_start, size_t count, FILE *out
     size_t pc = program_start;
 
     if (!clean) {
-        fprintf(out, "\n=== PROGRAM SECTION (starting at offset %d) ===\n\n", program_start);
+        fprintf(out, "\n=== PROGRAM SECTION (offset %d) ===\n\n", program_start);
     }
 
     while (pc < count) {
@@ -143,15 +154,23 @@ int main(int argc, char **argv) {
     fclose(file);
 
     printf("==========================================================\n");
-    printf("File format: VM version %d\n", header.version);
-    printf("Data section size: %d bytes\n", header.data_size);
-    printf("Program starts at: offset %d\n", header.program_start);
-    printf("Total loaded: %zu i32s\n", read_size);
+    printf("Header: \n");
+    printf("    Magic: %x ('", header.magic);
+
+    for(int i = 0; i <4 ; i++) {
+        char c = (header.magic >> (i * 8)) & 0xFF;
+        printf("%c", c);
+    }
+    printf("')\n");
+
+    printf("    Version format %d\n", header.version);
+    printf("    Data section size: %d bytes\n", header.data_size);
+    printf("    Program offset %d\n", header.program_start);
     printf("==========================================================\n");
 
     // disassemble
     if (header.data_size > 0) {
-        disassemble_data_section(read_object, header.data_size, stdout);
+        disassemble_data_section(read_object, header.data_size, stdout, false);
     }
     disassemble_program(read_object, header.program_start, read_size, stdout, false);
 
@@ -162,7 +181,8 @@ int main(int argc, char **argv) {
         if (f_asm) {
             fprintf(f_asm, ".data\n");
             if (header.data_size > 0) {
-                disassemble_data_section(read_object, header.data_size, f_asm);
+                fprintf(f_asm, "# ===  WARNING ====\n# .data section disassembly not fully suported yet\n\n");
+                disassemble_data_section(read_object, header.data_size, f_asm, true);
             }
             fprintf(f_asm, "\n.text\n");
             disassemble_program(read_object, header.program_start, read_size, f_asm, true);

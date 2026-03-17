@@ -67,16 +67,11 @@ int main(int argc, char **argv) {
     vm.stack_head = 0;
     memset(vm.stack, (i32)0, sizeof(vm.stack));
     memset(vm.registers, (i32)0, sizeof(vm.registers));
+    memset(vm.return_address_stack, (i32)0, sizeof(vm.return_address_stack));
     vm.return_address_head = 0;
 
     printf("==== VM INIT ===\n");
-    /*
-    printf("Data section: 0x%x bytes at offset %d\n", vm.data_size, vm.data_offset);
-    printf("Program starts at: %d\n", vm.program_counter);
-    printf("Total size: %d\n", vm.program_size);
-    */
-
-
+    
     while (!vm.halted) {
 
         switch (vm.program[vm.program_counter]) {
