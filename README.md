@@ -41,7 +41,7 @@ mov 10, $10                   # stores '10' in the register 10
 loop_start:                   # define a Label where the loop starts
 inc $1                        # increments the value at register 1 by 1 ($1++)
 cmp $1, $10                   # compares register 1 with register 10
-jle .loop_start               # goes to the start of the loop of the comparasion was less or equal
+jle .loop_start               # goes to the start of the loop of the comparison was less or equal
 state_dump                    # displays some information about the machine 
 halt                          # finishes machine execution and exits
 ```
@@ -94,6 +94,20 @@ Now take a look at your compiled binary code by running:
 ```
 
 Optionally add the `-s` flag to output the disassembled code to `disassembled.asm`
+
+Here is a slightly more complex example
+```asm
+toggle_verbose false
+mov write_syscall, $arg_a  # set syscall type
+mov stdout, $arg_b         # file descriptor for write syscall
+mov @msg, $arg_c           # pass the string as buffer for write syscall
+syscall                    # execute the syscall | write(stdout, &msg, strlen(msg))
+line_br                    # print '\n'
+halt
+
+.data
+    msg: "Hello, World!"
+```
 
 
 ## Documentation
