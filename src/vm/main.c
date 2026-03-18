@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     // ============ load it in to program array =============
 
     i32 loaded_program[MAX_PROGRAM_SIZE];
-    size_t total_loaded = fread(loaded_program, sizeof(i32), MAX_STACK_SIZE, file);
+    size_t total_loaded = fread(loaded_program, sizeof(i32), MAX_PROGRAM_SIZE, file);
     fclose(file);
     
     // ========= initialize vm ==============
