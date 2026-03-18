@@ -101,6 +101,7 @@ toggle_verbose false
 mov write_syscall, $arg_a  # set syscall type
 mov stdout, $arg_b         # file descriptor for write syscall
 mov @msg, $arg_c           # pass the string as buffer for write syscall
+strlen @msg, $arg_d        # pass the length of the data to be written
 syscall                    # execute the syscall | write(stdout, &msg, strlen(msg))
 line_br                    # print '\n'
 halt
