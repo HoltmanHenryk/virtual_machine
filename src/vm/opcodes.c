@@ -573,6 +573,8 @@ void print_int(VM *vm) {
     i32 value = vm->registers[reg];
 
     printf("%d", value);
+    fflush(stdout);
+
     vm_verbose(" $%d=='%d } \n", reg, value);
 
     vm->program_counter++;
@@ -585,6 +587,7 @@ void iprint_char(VM *vm) {
     i32 value = vm->program[vm->program_counter];
 
     printf("%c",(char)value);
+    fflush(stdout);
 
     vm_verbose(" %d=='%c' }\n", value, (char)value);
 
