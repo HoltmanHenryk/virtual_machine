@@ -178,7 +178,7 @@ halt
 
 The ROM's bytecode format is split in 3 sections, a `Header`, `.data` section, and `program` or `.text` section.
 
-Here is a hexdump of `hello_world.bin`
+Here is a hexdump of `hello_world.bin` with notable sections pointed out.
 
 ```txt
 [HEADER]
@@ -200,9 +200,9 @@ Here is a hexdump of `hello_world.bin`
 00000038: |  6c00 0000  l... |
 0000003c: |  6400 0000  d... |
 00000040: |  2100 0000  !... |
-00000044: |  0000 0000  .... | <- Strings are null terminated
+00000044: |  0000 0000  .... | <- strings are null terminated
 [.TEXT]
-00000048: |  0600 0000  .... | <- program starts point here
+00000048: |  0600 0000  .... | <- "program start" points here
 0000004c: |  0000 0000  .... |
 00000050: |  0700 0000  .... |
 00000054: |  0100 0000  .... |
