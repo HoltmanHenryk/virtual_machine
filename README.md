@@ -42,7 +42,7 @@ loop_start:                   # define a Label where the loop starts
 inc $1                        # increments the value at register 1 by 1 ($1++)
 cmp $1, $10                   # compares register 1 with register 10
 jle .loop_start               # goes to the start of the loop of the comparison was less or equal
-state_dump                    # displays some information about the machine 
+register_dump $1, $10         # displays some information about the machine 
 halt                          # finishes machine execution and exits
 ```
 
@@ -76,8 +76,6 @@ The second to last instruction (`state_dump`) prints some info about the registe
 
 
 ```raw
-STATE_DUMP:
-##############################
 REGISTERS:
         register[ 1] = 11
 [...]
