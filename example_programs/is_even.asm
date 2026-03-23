@@ -1,10 +1,11 @@
 toggle_verbose false
 no_op
 mov 0, $0
-mov 1, $1
 mov 2, $2
 
-mov 5, $5
+call .print_prompt
+rdint $5
+
 ld $5, $3
 
 mod $3, $2
@@ -13,6 +14,7 @@ cmp $3 $0
 je .is_even
 jne .is_odd
 
+halt
 
 
 is_even:
@@ -35,8 +37,17 @@ print_result:
     line_br
     halt
     
+print_prompt:
+    mov write_syscall, $arg_a
+    mov stdout, $arg_b
+    mov @prompt, $arg_c
+    strlen @prompt, $arg_d
+    syscall
+    ret
+ 
 
-
+   
 .data
     even: " is even."
     odd: " is odd."
+    prompt: "Type a integer: "

@@ -227,6 +227,11 @@ int main(int argc, char **argv) {
         case LDXO: {
             ldxo(&vm);
         } break;
+
+        case RDINT: {
+            rdint(&vm);
+        } break;
+
         
         case OPCODE_COUNT: 
         default: {

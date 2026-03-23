@@ -657,3 +657,20 @@ void ldxo(VM *vm) {
 
     vm->program_counter++;
 }
+
+void rdint(VM *vm) {
+    vm_verbose("RDINT: {");
+    vm->program_counter++;
+
+    i32 reg_idx = vm->program[vm->program_counter];
+
+    i32 value = 0;
+
+    scanf("%d", &value);
+
+    vm->registers[reg_idx] = value;
+
+    vm_verbose(" } \n");
+
+    vm->program_counter++;
+}

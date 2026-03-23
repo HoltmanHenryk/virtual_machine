@@ -23,11 +23,15 @@ typedef enum : i32 {
     REG_7,
     REG_8,
     REG_9,
-    REG_10,
+    REG_11,
+    REG_12,
+    REG_13,
+    REG_14,
+    REG_15,
 
     NAMED_REGISTERS_SPLIT,
 
-    REG_ARG_A = 100,
+    REG_ARG_A = 50,
     REG_ARG_B,
     REG_ARG_C,
     REG_ARG_D,
@@ -81,6 +85,7 @@ typedef enum : i32 {
     LINE_BR,
     LDO,
     LDXO,
+    RDINT,
 
     OPCODE_COUNT
 } Opcodes;
@@ -144,6 +149,7 @@ static const Instruction_spec ASSEMBLY_TABLE[] =  {
     [LINE_BR]        =  { "line_br", 0,        { ARG_NONE}},
     [LDO]            =  { "ldo", 2,            { ARG_VAL, ARG_REG}},
     [LDXO]           =  { "ldxo", 3,           { ARG_REG, ARG_REG, ARG_REG}},
+    [RDINT]          =  { "rdint", 1,          { ARG_REG}},
 };
 
 // :Tabularize /[={]
@@ -191,7 +197,6 @@ static const Constant_spec PREDEFINED_CONSTANTS[] = {
 
 // clang-format on
 
-#define VM_VERSION OPCODE_COUNT
 
 typedef struct {
     i32 magic;

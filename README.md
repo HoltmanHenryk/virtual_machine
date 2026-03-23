@@ -153,6 +153,7 @@ halt
 |LINE\_BR| Prints '\n' to stdout | 0 | line\_br|
 |LDO| Load Data Offset, stores the offset of labeled data pointer to a $reg\_a |2| ldo @data\_pointer, $reg\_a |
 |LDXO| Load Data indeXed Offset, loads the value pointed by $reg\_a, offset by $reg\_b (could be 0), and stores it in $reg\_c | 3 | ldxo $reg\_a, $reg\_b, $reg\_c |
+|RDINT| Read a signed 32 bit integer from stding, store it to $arg\_a | 1 | rdint $arg\_a|
 
 
 
