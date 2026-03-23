@@ -41,5 +41,6 @@ void iprint_int(VM *vm);
 void line_br(VM *vm);
 void ldo(VM *vm);
 void ldxo(VM *vm);
+void rdint(VM *vm);
 
 #endif /* OPCODES_H */

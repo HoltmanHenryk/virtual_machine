@@ -15,16 +15,16 @@ void disassemble_data_section(i32 *buffer, i32 data_size, FILE *out, bool clean)
     i32 i = 0;
     while (i < data_size) {
 
-        if(clean) { fprintf(out, "# "); }
-        if (!clean)fprintf(out, "0x%04x(%4d): ", i, i);
-        if (clean) fprintf(out, "0x%04x(%4d): ", i, i);
-        if(clean) { fprintf(out, "\n"); }
+        if (clean) { fprintf(out, "# "); }
+        fprintf(out, "0x%04x(%4d): ", i, i);
+        if (clean) {  fprintf(out, "\n"); }
 
         
-        fprintf(out, "%d", buffer[i]);
+        fprintf(out, "%4d", buffer[i]);
         if(buffer[i] >= 32 && buffer[i] < 127) { // printable ascii range
-            fprintf(out, " # '%c'\n", (char)buffer[i]);
+            fprintf(out, " # '%c'", (char)buffer[i]);
         }
+        fprintf(out, "\n");
         i++;
 
     }

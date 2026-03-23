@@ -3,6 +3,9 @@
 CC := gcc
 CFLAGS := -Wall -Wextra -Wswitch-enum -static -std=c11 -ggdb
 
+VM_VERSION := $(shell expr `cksum src/spec.h | cut -f1 -d' '` % 100000)
+CFLAGS += -DVM_VERSION=$(VM_VERSION)
+
 GLOBAL_DEPS = src/spec.h
 
 all: vm disasm vmasm
