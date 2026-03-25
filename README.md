@@ -76,11 +76,14 @@ The second to last instruction (`register_dump`) prints some info about the regi
 register\_dump
 
 ```raw
-REGISTERS:
+REGISTER_DUMP:
+##############################
+Dumping registers [1] .. [10]:
+
         register[ 1] = 11
 [...]
         register[10] = 10
-[...]
+##############################
 ```
 
 
@@ -155,10 +158,10 @@ halt
 |LDXO| Load Data indeXed Offset, loads the value pointed by $reg\_a, offset by $reg\_b (could be 0), and stores it in $reg\_c | 3 | ldxo $reg\_a, $reg\_b, $reg\_c |
 |RDINT| Read a signed 32 bit integer from stding, store it to $reg\_a | 1 | rdint $reg\_a|
 |AND| Bitwise AND (`&`), stores result in $reg\_a |2| and $reg\_a, $reg\_b|
-|OR| Bitwise OR (`|`), stores result in $reg\_a | 2| or $reg\_a, $reg\_b|
+|OR| Bitwise OR (`\|`), stores result in $reg\_a | 2| or $reg\_a, $reg\_b|
 |XOR| Bitwise XOR (`^`), stores result in $reg\_a| 2| xor $reg\_, $reg\_b|
-|LSH| Left SHift (`&lt;&lt`) | 1| lsh $reg\_a|
-|RSH| Right SHift (`&gt;&gt`) | 1 | rsh $reg\_a|
+|LSH| Left SHift (`<<`) | 1| lsh $reg\_a|
+|RSH| Right SHift (`>>`) | 1 | rsh $reg\_a|
 |LSHA| Left SHift Ammount specified in $reg\_b, stores result in $reg\_a | 2 | lsha $reg\_a, $reg\_b|
 |RSHA|Right SHift Ammount specified in $reg\_b, stores result i $reg\_a  | 2 | rsha $reg\_a, $reg\_b|
 
