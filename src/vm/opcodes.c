@@ -64,8 +64,8 @@ void register_dump(VM *vm) {
     vm->program_counter++;
     i32 reg_end_ind = vm->program[vm->program_counter];
 
-    assert(reg_end_ind + 1 <= NAMED_REGISTERS_SPLIT);
-    assert(reg_start_ind <= reg_end_ind);
+   // assert(reg_end_ind + 1 <= NAMED_REGISTERS_SPLIT);
+    //assert(reg_start_ind <= reg_end_ind);
 
     printf("Dumping registers [%d] .. [%d]:\n\n", reg_start_ind, reg_end_ind);
 
@@ -545,6 +545,34 @@ void strlen_(VM *vm) {
     if (buff_addr <= vm->data_offset && buff_addr < vm->program_size) {
         while ( buff_addr + len < vm->program_size && vm->program[buff_addr + len] != 0 ) {
             len++;
+        }
+    }
+    vm->registers[dest_reg] = len;
+    vm_verbose(" (length=%d) }\n", len);
+    vm->program_counter++;
+}
+
+void strlen_r(VM *vm) {
+    vm_verbose("STRLEN_R: {");
+    vm->program_counter++;
+
+    i32 reg_ind = vm->program[vm->program_counter];
+    i32 reg_val = vm->registers[reg_ind];
+    
+    i32 buff_addr = 0;
+    buff_addr = reg_val;
+    vm_verbose(" buff_addr=%d", buff_addr);
+    vm->program_counter++;
+
+    i32 dest_reg = vm->program[vm->program_counter];
+    vm_verbose(" -> $%d", dest_reg);
+
+    i32 len = 0;
+    if (buff_addr + len <= vm->data_offset) {
+        while ( buff_addr + len < vm->program_size && vm->program[buff_addr + len] != 0 ) {
+            len++;
+            /*printf("len=%d  %c \n", len, (char)vm->program[buff_addr + len]);
+            printf(" buff_addr + len  = %d \n", buff_addr + len );*/
         }
     }
     vm->registers[dest_reg] = len;

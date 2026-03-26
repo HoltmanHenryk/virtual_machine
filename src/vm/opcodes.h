@@ -34,6 +34,7 @@ void call(VM *vm);
 void ret(VM *vm);
 void syscall_(VM *vm);
 void strlen_(VM *vm);
+void strlen_r(VM *vm);
 void print_char(VM *vm);
 void print_int(VM *vm);
 void iprint_char(VM *vm);
