@@ -171,6 +171,18 @@ halt
 - %value = any signed 32 Bit number (int32\_t), for certain instructions, could be replaced by a `.label` or `@data_pointer`
 - There are a few named registers, these being `$arg_a` .. `$arg_d`, and `$ret`, conventionally used to store arguments and return values for `call` or `syscall`
 
+### Syscall table
+<details closed>
+<summary> CLICK TO EXPAND </summary>
+
+The syscall opcode gets its syscall type thrugh $arg\_a, leaving $arg\_b and forwards to accept the arguments, each syscall expects certain values to be in specific registers.
+
+|Syscall | Arguments | Equivalent in C |
+|-|-|-|
+|write   | arg\_b = file desriptor <br> arg\_c = data pointer <br> arg\_d = size of data | write(arg\_a, arg\_b, arg\_c)
+
+</details>
+
 
 ### Constants
 
