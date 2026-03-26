@@ -118,36 +118,36 @@ halt
 
 | Opcode |  INFO | Argument count | Example |
 | -------| ------|----------------|---------|
-| NO\_OP |  No operation. | 0 | no\_op|
-| HALT   |  Halts the machine. | 0 | halt |
+| NO\_OP |  No Operation. | 0 | no\_op|
+| HALT   |  HALTs the machine. | 0 | halt |
 | STATE\_DUMP | Prints the value of the registers, program size and program counter | 0 | state\_dump |
 | REGISTER\_DUMP | Prints the value of the registers arg\_ until arg\_b, inclusive| 2 | register\_dump $arg\_a, $arg\_b |
 | PROGRAM\_DUMP | Dumps the current loaded program to 'dumped-program.bin' (useful when debugging a self altering program) | 0 | program\_dump|
 | STACK\_DUMP| Prints the value at current stack header, and 3 surrounding values | 0 | stack\_dump|
 | TOGGLE\_VERBOSE | Toggles verbose output of the machine on or off if `value > 0`, starts off | 1 | toggle\_verbose %value|
-| MOV    |  Moves a value in to a register | 2 | mov %value, $reg | 
-| LD     |  Loads the value of a register in to another | 2 | ld $reg\_from, $reg\_to |
-| INC    |  Increments the value of a register by 1 | 1 | inc $reg |
-| DEC    |  Decrements the value of a register by 1 | 1 | dec $reg |
-| STO\_PC | Stores the imediate next OPERATION entry to a register, mostly deprecated in favor of labels | 1 | sto\_pc $reg |
-| CMP    | Compares the values of 2 registers by subtracting reg\_b from reg\_a, then sets COMP flag accordingly | 2 | cmp $reg\_a, $reg\_b|
-| JMP | Unconditional jump, sets program counter to value | 1 | jmp %value/label|
-| JE | Jump if equals. Jumps program counter to value if last CMP instruction yielded 0| 1 | je %value/label|
-| JNE | Jump if not equals. Jumps program counter to value if last CMP instruction yielded anything other than ZERO| 1 |jne %value/label| 
-| JGE | Jump if greater or equals. Jumps the program counter to value if the last CMP instruction yielded ZERO or POSITIVE | 1 | jge %value/label|
-| JLE | Jump if less or equals. Jumps the program counter to value if the last CMP instruction yielded NEGATIVE or ZERO| 1 | jle %value/label|
-| ADD | Adds reg\_a and reg\_b, stores result to reg\_a | 2 | add $reg\_a $reg\_b |
-| SUB | Subtract reg\_a and reg\_b, stores result to reg\_a | 2 | sub $reg\_a $reg\_b |
-| MUL | Multiply reg\_a and reg\_b, stores result to reg\_a | 2 | mul $reg\_a $reg\_b |
-| DIV | Divide reg\_a and reg\_b, stores result to reg\_a | 2 | div $reg\_a $reg\_b |
-| MOD | Gives division remainder (modulo) of reg\_a and reg\_b, stores result to reg\_a | 2 | mod $reg\_a $reg\_b |
-| PUSH | Pushes the value of a register in to the stack | 1 | push $reg |
-| I\_PUSH | Pushes an imediate value to the stack | 1 | i\_push %value |
-| POP | Pops the last item in the stack, saves it to a reg\_a | 1 | pop $reg\_a |
-| VOID\_POP | Pops the last item in the stack, discarding its value| 0 | void\_pop |
-| CALL | Jumps to a label and sets the return address stack | 1 | call %value/label |
-| RET | Returns by jumping to the last return address stack, pops its value | 0 | ret |
-| SYSCALL | Execute system syscall, recieves syscall type through $arg\_a, check syscall table | 0 | syscall|
+| MOV    |  MOVes a value in to a register | 2 | mov %value, $reg | 
+| LD     |  LoaDs the value of a register in to another | 2 | ld $reg\_from, $reg\_to |
+| INC    |  INCrements the value of a register by 1 | 1 | inc $reg |
+| DEC    |  DECrements the value of a register by 1 | 1 | dec $reg |
+| STO\_PC | STOres the imediate next OPERATION (of Program Counter) entry to a register, mostly deprecated in favor of labels | 1 | sto\_pc $reg |
+| CMP    | CoMPares the values of 2 registers by subtracting reg\_b from reg\_a, then sets COMP flag accordingly | 2 | cmp $reg\_a, $reg\_b|
+| JMP | Unconditional JuMP, sets program counter to value | 1 | jmp %value/label|
+| JE | Jump if Equals. Jumps program counter to value if last CMP instruction yielded 0| 1 | je %value/label|
+| JNE | Jump if Not Equals. Jumps program counter to value if last CMP instruction yielded anything other than ZERO| 1 |jne %value/label| 
+| JGE | Jump if Greater or Equals. Jumps the program counter to value if the last CMP instruction yielded ZERO or POSITIVE | 1 | jge %value/label|
+| JLE | Jump if Less or Equals. Jumps the program counter to value if the last CMP instruction yielded NEGATIVE or ZERO| 1 | jle %value/label|
+| ADD | ADDs reg\_a and reg\_b, stores result to reg\_a | 2 | add $reg\_a $reg\_b |
+| SUB | SUBtract reg\_a and reg\_b, stores result to reg\_a | 2 | sub $reg\_a $reg\_b |
+| MUL | MULtiply reg\_a and reg\_b, stores result to reg\_a | 2 | mul $reg\_a $reg\_b |
+| DIV | DIVide reg\_a and reg\_b, stores result to reg\_a | 2 | div $reg\_a $reg\_b |
+| MOD | Gives division remainder (MODulo) of reg\_a and reg\_b, stores result to reg\_a | 2 | mod $reg\_a $reg\_b |
+| PUSH | PUSHes the value of a register in to the stack | 1 | push $reg |
+| I\_PUSH | PUSHes an Imediate value to the stack | 1 | i\_push %value |
+| POP | POPs the last item in the stack, saves it to a reg\_a | 1 | pop $reg\_a |
+| VOID\_POP | POPs the last item in the stack, discarding its value| 0 | void\_pop |
+| CALL | Jumps to a label, similar to a function CALL and sets the return address stack | 1 | call %value/label |
+| RET | RETurns by jumping to the last return address stack, pops its value | 0 | ret |
+| SYSCALL | Execute system SYSCALL, recieves syscall type through $arg\_a, check syscall table | 0 | syscall|
 | STRLEN | Accepts data pointer / data label, counts until finding `\0`, stores in reg\_a | 2 | strlen @string\_data, $reg\_a|
 | STRLEN\_R | Uses value of register as data pointer, counts until finding `\0`, stores in reg\_a | 2 | strlen $reg\_dataptr, $reg\_a|
 |PRINT\_CHAR| Prints ASCII of value of register passed to stdout | 1 | print\_char $reg\_a | 
@@ -157,7 +157,7 @@ halt
 |LINE\_BR| Prints '\n' to stdout | 0 | line\_br|
 |LDO| Load Data Offset, stores the offset of labeled data pointer to a $reg\_a |2| ldo @data\_pointer, $reg\_a |
 |LDXO| Load Data indeXed Offset, loads the value pointed by $reg\_a, offset by $reg\_b (could be 0), and stores it in $reg\_c | 3 | ldxo $reg\_a, $reg\_b, $reg\_c |
-|RDINT| Read a signed 32 bit integer from stding, store it to $reg\_a | 1 | rdint $reg\_a|
+|RDINT| ReaD a signed 32 bit INTeger from stding, store it to $reg\_a | 1 | rdint $reg\_a|
 |AND| Bitwise AND (`&`), stores result in $reg\_a |2| and $reg\_a, $reg\_b|
 |OR| Bitwise OR (`\|`), stores result in $reg\_a | 2| or $reg\_a, $reg\_b|
 |XOR| Bitwise XOR (`^`), stores result in $reg\_a| 2| xor $reg\_, $reg\_b|
