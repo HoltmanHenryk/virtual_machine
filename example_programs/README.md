@@ -1,27 +1,49 @@
 # Examples
 
-### readme\_example.asm
+## Examples follow no specific order, and it's up to the user to find the suitable learning order based on the descriptions.
 
-Example found in the project's root `README.md`, showing a simple loop, how to adress registers and how to leave a comment
-
-
-### loop\_test.asm
-
-Example showing different types of loops with the different types of jump instructions
-
+### hello\_world.asm
+Simple example that prints "Hello, World!" to the screen
 
 ### math\_operations.asm
-
-Example showing `addition`, `subtraction`, `multiplication`, `division` and `modulo` operations
-
-
-
-### push\_call.asm
-
-Example showing the `push` and `pop` operations, then using `call` and `ret` to do a function call, using the named registers `$arg_a` and `$arg_b` and `$ret`
-
-
+Simple example showing the main math operations
 
 ### stack\_example.asm
+Example of the different ways to push and pop to the stack
 
-Example with a function that pushes and then pops a few values of the stack, showing it does not clean the popped values, but in fact only moves the stack head, and allows the values to be overrriden
+### array.asm
+Example on how to acess array values from data section
+
+### is\_even.asm
+Example on how to read number input from the terminal and check if its even or odd
+
+### print\_function.asm
+Example on how to refactor the whole syscall process in to a function for convenience
+
+### table.asm
+Example on how to make a "table" that returns specific values based on its input
+
+### bitwise.asm
+Example on the bitwise operations, including printing values and line breaks;
+
+### loop\_test.asm
+Simple example on the different loop types you can do with the operations included
+
+### push\_call.asm
+Example on how do do "function" calls, using the call operator, and pushing and popping from the stack
+
+### table\_data\_section.asm
+Same example as `table.asm`, except using the `.data` section to store values
+
+### fizzbuzz.asm
+FizzBuzz example 
+(Loop from 1->100, where: multiples of 3 = Fizz, multiples of 5 = Buzz, multiples of 3 and 5 = FizzBuzz, otherwise just print the number)
+
+### math\_function\_call.asm
+Example on how to make functions for all of the basic math operations
+
+### readme\_example.asm
+The example contained in the `README.md` of the project
+
+### three.asm
+Example showing how far off from `3` is your number
