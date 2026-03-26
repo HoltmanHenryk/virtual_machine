@@ -200,6 +200,10 @@ int main(int argc, char **argv) {
             strlen_(&vm);
         } break;
 
+        case STRLEN_R: {
+            strlen_r(&vm);
+        } break;
+
         case PRINT_CHAR: {
             print_char(&vm);
         } break;

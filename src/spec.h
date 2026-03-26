@@ -10,6 +10,11 @@
 
 #define VM_MAGIC 0x525F4D56 /* VM_R */
 
+#ifndef VM_VERSION
+#define VM_VERSION -1
+#endif
+
+
 typedef int32_t i32;
 
 typedef enum : i32 {
@@ -78,6 +83,7 @@ typedef enum : i32 {
     RET,
     SYSCALL,
     STRLEN,
+    STRLEN_R,
     PRINT_CHAR,
     PRINT_INT,
     IPRINT_CHAR,
@@ -150,6 +156,7 @@ static const Instruction_spec ASSEMBLY_TABLE[] =  {
     [RET]            =  { "ret", 0,            { ARG_NONE}},
     [SYSCALL]        =  { "syscall", 0,        { ARG_NONE}},
     [STRLEN]         =  { "strlen", 2,         { ARG_VAL, ARG_REG}},
+    [STRLEN_R]       =  { "strlen_r", 2,       { ARG_REG, ARG_REG}},
     [PRINT_CHAR]     =  { "print_char", 1,     { ARG_REG}},
     [PRINT_INT]      =  { "print_int", 1,      { ARG_REG}},
     [IPRINT_CHAR]    =  { "iprint_char", 1,    { ARG_VAL}},
