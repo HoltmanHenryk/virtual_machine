@@ -50,3 +50,6 @@ Example showing how far off from `3` is your number
 
 ### write\_overflow.asm
 Showing having a missmatching strlen as buffer size to write allows you to write data thats after the end of the string
+
+### getpid.asm
+Showing how to get own process id, and using the kill signal on it.

@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include "opcodes.h"
 
 #include <inttypes.h>
@@ -5,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <signal.h>
 
 void vm_verbose_(VM *vm, const char *format, ...) {
 
@@ -507,7 +511,7 @@ void syscall_(VM *vm) {
 
     switch(syscall_num) {
 
-        case 1: { /* write(fd, buff_addr, count) */
+        case WRITE_SYSCALL: { /* write(fd, buff_addr, count) */
             i32 fd = vm->registers[REG_ARG_B];
             i32 buff_addr = vm->registers[REG_ARG_C];
             i32 count = vm->registers[REG_ARG_D];
@@ -524,6 +528,24 @@ void syscall_(VM *vm) {
                 fsync(fd);
             }
             vm_verbose(" }\n");
+        } break;
+
+        case GETPID_SYSCALL: { /* arg_b = getpid() */
+            pid_t pid = getpid();
+            i32 self_pid = (i32)pid;
+
+            vm_verbose(" getpid() = %d -> ARG_B }\n", self_pid);
+
+            vm->registers[REG_ARG_B] = self_pid;
+        } break;
+
+        case KILL_SYSCALL: {
+            i32 pid = vm->registers[REG_ARG_B];
+            i32 signal = vm->registers[REG_ARG_C];
+
+            kill((pid_t)pid, signal);
+
+            vm_verbose(" Killed %d (%d) }\n", pid, signal);
         } break;
 
     }
@@ -570,8 +592,6 @@ void strlen_r(VM *vm) {
     if (buff_addr + len <= vm->data_offset) {
         while ( buff_addr + len < vm->program_size && vm->program[buff_addr + len] != 0 ) {
             len++;
-            /*printf("len=%d  %c \n", len, (char)vm->program[buff_addr + len]);
-            printf(" buff_addr + len  = %d \n", buff_addr + len );*/
         }
     }
     vm->registers[dest_reg] = len;
@@ -602,7 +622,7 @@ void print_int(VM *vm) {
     printf("%d", value);
     fflush(stdout);
 
-    vm_verbose(" $%d=='%d } \n", reg, value);
+    vm_verbose(" $%d=='%d' } \n", reg, value);
 
     vm->program_counter++;
 }
