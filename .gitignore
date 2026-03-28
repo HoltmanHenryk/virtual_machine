@@ -2,6 +2,7 @@ vm
 disasm
 vmasm
 disassembled.asm
+file.txt
 *.obj
 *.bin
 
