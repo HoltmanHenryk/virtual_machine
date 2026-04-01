@@ -636,8 +636,10 @@ void syscall_(VM *vm) {
                 char c;
                 ssize_t n = read(fd, &c, 1);
 
-                if (n <= 0) break; // error or EOF
-                if (c == '\n') break; // stop on ENTER for now
+                if (n <= 0) break; /* error or EOF */
+                
+                if(fd == stdin && c == '\n') break;
+
 
                 i32 *ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
 
