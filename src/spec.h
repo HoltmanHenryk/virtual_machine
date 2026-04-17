@@ -13,7 +13,15 @@
 #define VM_MAGIC 0x525F4D56 /* VM_R */
 
 #ifndef VM_VERSION
-#define VM_VERSION -1
+    #define VM_VERSION -1
+#endif
+
+#ifndef BUILD_DATE
+    #define BUILD_DATE "Unknown"
+#endif
+
+#ifndef GIT_HASH
+    #define GIT_HASH "Unknown"
 #endif
 
 

@@ -11,18 +11,31 @@
 
 void dump_ram_memory(VM *vm);
 
-void print_usage(int argc, char **argv) {
+_Noreturn void print_usage(int argc, char **argv) {
     UNUSED(argc);
     printf("Usage: %s <program.bin> [flags]\n", argv[0]);
-    printf("          -v, -verbose       Force verbose mode on.\n");
-    printf("          -md, -memdump      Dump RAM at program halt. (RAM.DATA)\n");
+    printf("        -v, -verbose       Force verbose mode on.\n");
+    printf("        -V, -version       Print version information and exit.\n");
+    printf("        -md, -memdump      Dump RAM at program halt. (RAM.DATA)\n");
+    printf("        -h, -help          Prints this message\n");
+    exit(1);
 
+}
+
+_Noreturn void version_info(void){
+    printf("VMASM Interpreter:\n");
+    printf("Spec version:           %d\n", VM_VERSION);
+    printf("Expected Magic Bytes:   %#x\n", VM_MAGIC);
+    printf("Build:                  %s  \n", GIT_HASH);
+    printf("Build date:             %s   \n", BUILD_DATE);
+    exit(0);
 }
 
 int main(int argc, char **argv) {
 
     if (argc < 2) {
-        print_usage(argc, argv);
+        //print_usage(argc, argv);
+        printf("Usage: %s <program.bin> [flags]\nUse -help for more information.\n", argv[0]);
         exit(1);
     }
 
@@ -35,6 +48,8 @@ int main(int argc, char **argv) {
         if(strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "-verbose") == 0) { forced_verbose = true;}
 
         if(strcmp(argv[i], "-md") == 0 || strcmp(argv[i], "-memdump") == 0) { dump_ram = true;}
+
+        if(strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0 ) { version_info(); }
 
         /* first flag that does not start with - is file path*/
         if(argv[i][0] != '-') {program_file_path = argv[i];}

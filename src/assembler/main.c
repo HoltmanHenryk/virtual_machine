@@ -15,6 +15,7 @@
 
 #define RUNNER_NAME "vm"
 
+
 typedef struct {
     char *value;
     int line;
@@ -78,7 +79,7 @@ void report_error(const char *filename, const char *buffer, int line, int col, s
     fprintf(stderr, "\033[1;32m^\033[0m\n");
 }
 
-void run_after_compile(const char *out_file) {
+void run_after_compile(const char *out_file, char **extra_args, int extra_argc) {
     char exe_path[PATH_MAX];
     char vm_path[PATH_MAX];
     char temp_path[PATH_MAX];
@@ -103,8 +104,22 @@ void run_after_compile(const char *out_file) {
         return;
     }
 
-    char *args[] = {vm_path, (char *)out_file, NULL};
+    int total_args = 2 + extra_argc + 1;
+    char **args = malloc(sizeof(char *) * total_args);
+    if(!args) { perror("allocating args for interpreter failed"); return; }
+
+    args[0] = vm_path;
+    args[1] = (char *)out_file;
+
+    for (int i = 0; i < extra_argc; ++i) {
+         args[i + 2] = extra_args[i];
+    }
+
+    args[total_args - 1] = NULL;
+
+    //char *args[] = {vm_path, (char *)out_file, NULL};
     execv(vm_path, args);
+
     perror("if you got here, execv failed miserably");
     exit(1);
 }
@@ -192,26 +207,61 @@ Token *tokenizer_next(Tokenizer *t) {
     return token;
 }
 
+_Noreturn void version_info(void){
+    printf("VMASM Assembler:\n");
+    printf("Spec version:                   %d\n", VM_VERSION);
+    printf("Expected Magic Bytes:           %#x\n", VM_MAGIC);
+    printf("Build:                          %s  \n", GIT_HASH);
+    printf("Build date:                     %s   \n", BUILD_DATE);
+    printf("Interpreter '-run' flag name:   %s    \n", RUNNER_NAME);
+    exit(0);
+}
+
+_Noreturn void print_help(char **argv) {
+
+    printf("Usage: %s <input file> [-o <output>] [flags] [-run [interpreter flags...]]\n", argv[0]);
+    printf("        -V, -version    Print version informaton and exit.\n");
+    printf("        -h, -help       Print this message.\n");
+    exit(1);
+}
 
 int main(int argc, char **argv) {
     char *input_path = NULL;
     char *output_path = "out.bin";
     bool run_flag = false;
 
+    char **interpreter_args = NULL;
+    int interpreter_argc;
+
     if (argc < 2) {
-        printf("Usage: %s <input file> [-o <output>] [-run]\n", argv[0]);
+        printf("Usage: %s <input file> [-o <output>] [flags] [-run [interpreter flags...]]\nUse -help for more information.\n", argv[0]);
         exit(1);
     }
 
     for (int i = 1; i < argc; ++i) {
+
         if (strcmp(argv[i], "-o") == 0) {
             if (i + 1 < argc) output_path = argv[++i];
             else { fprintf(stderr, "Error: -o needs a path.\n"); exit(1); }
-        } else if (strcmp(argv[i], "-run") == 0) {
-            run_flag = true;
-        } else if (argv[i][0] != '-') {
-            input_path = argv[i];
         }
+
+        if (strcmp(argv[i], "-run") == 0) {
+            run_flag = true;
+
+            /* anything after -run is passed to the interpreter */
+            if(i + 1 < argc) {
+                interpreter_args = &argv[i + 1];
+                interpreter_argc = argc - (i - 1) - 2;
+                break;
+            }
+
+        } 
+
+        if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) { version_info(); }
+
+        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0) { print_help(argv); }
+
+        if (argv[i][0] != '-') { input_path = argv[i]; }
     }
 
     if (!input_path) { fprintf(stderr, "Error: no input file.\n"); exit(1); }
@@ -397,7 +447,8 @@ int main(int argc, char **argv) {
     free(buffer);
     for(int i=0; i<label_count; i++) free(symbol_table[i].name);
 
-    if (run_flag) run_after_compile(output_path);
+    if (run_flag) run_after_compile(output_path, interpreter_args, interpreter_argc);
+
 
     return 0;
 }
