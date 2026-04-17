@@ -82,11 +82,28 @@ void disassemble_program(i32 *buffer, i32 program_start, size_t count, FILE *out
     }
 }
 
+_Noreturn void version_info(void){
+    printf("VMASM disassembler:\n");
+    printf("Spec version:           %d\n", VM_VERSION);
+    printf("Expected Magic Bytes:   %#x\n", VM_MAGIC);
+    printf("Build:                  %s  \n", GIT_HASH);
+    printf("Build date:             %s   \n", BUILD_DATE);
+    exit(0);
+}
+
+_Noreturn void print_help(char **argv) {
+    printf("Usage: %s <program.bin> [flags]\n", argv[0]);
+    printf("        -s                 Output disassembled code to 'disassembled.asm'.\n");
+    printf("        -V, -version       Print version information and exit.\n");
+    printf("        -h, -help          Prints this message\n");
+    exit(1);
+}
+
 int main(int argc, char **argv) {
 
     if (argc < 2) {
         printf("Usage: %s <obj file> [-s]\n", argv[0]);
-        printf("Options:\n -s: Save to 'disassembled.asm'\n");
+        printf("Use -help for more info.\n");
         exit(1);
     }
 
@@ -94,9 +111,15 @@ int main(int argc, char **argv) {
     const char *input_path = NULL;
 
     for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "-s") == 0) {
-            save_to_file = true;
-        } else if (argv[i][0] != '-') {
+
+        if (strcmp(argv[i], "-s") == 0) { save_to_file = true; }
+
+        if(strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) { version_info(); }
+
+        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0) { print_help(argv); }
+
+        if (argv[i][0] != '-') {
+            /* last argument without -s is input path */
             input_path = argv[i];
         }
     }

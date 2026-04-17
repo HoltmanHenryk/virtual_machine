@@ -15,6 +15,7 @@
 
 #define RUNNER_NAME "vm"
 
+
 typedef struct {
     char *value;
     int line;
@@ -206,6 +207,23 @@ Token *tokenizer_next(Tokenizer *t) {
     return token;
 }
 
+_Noreturn void version_info(void){
+    printf("VMASM Assembler:\n");
+    printf("Spec version:                   %d\n", VM_VERSION);
+    printf("Expected Magic Bytes:           %#x\n", VM_MAGIC);
+    printf("Build:                          %s  \n", GIT_HASH);
+    printf("Build date:                     %s   \n", BUILD_DATE);
+    printf("Interpreter '-run' flag name:   %s    \n", RUNNER_NAME);
+    exit(0);
+}
+
+_Noreturn void print_help(char **argv) {
+
+    printf("Usage: %s <input file> [-o <output>] [flags] [-run [interpreter flags...]]\n", argv[0]);
+    printf("        -V, -version    Print version informaton and exit.\n");
+    printf("        -h, -help       Print this message.\n");
+    exit(1);
+}
 
 int main(int argc, char **argv) {
     char *input_path = NULL;
@@ -216,15 +234,18 @@ int main(int argc, char **argv) {
     int interpreter_argc;
 
     if (argc < 2) {
-        printf("Usage: %s <input file> [-o <output>] [-run [interpreter flags...]]\n", argv[0]);
+        printf("Usage: %s <input file> [-o <output>] [flags] [-run [interpreter flags...]]\nUse -help for more information.\n", argv[0]);
         exit(1);
     }
 
     for (int i = 1; i < argc; ++i) {
+
         if (strcmp(argv[i], "-o") == 0) {
             if (i + 1 < argc) output_path = argv[++i];
             else { fprintf(stderr, "Error: -o needs a path.\n"); exit(1); }
-        } else if (strcmp(argv[i], "-run") == 0) {
+        }
+
+        if (strcmp(argv[i], "-run") == 0) {
             run_flag = true;
 
             /* anything after -run is passed to the interpreter */
@@ -234,9 +255,13 @@ int main(int argc, char **argv) {
                 break;
             }
 
-        } else if (argv[i][0] != '-') {
-            input_path = argv[i];
-        }
+        } 
+
+        if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) { version_info(); }
+
+        if(strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0) { print_help(argv); }
+
+        if (argv[i][0] != '-') { input_path = argv[i]; }
     }
 
     if (!input_path) { fprintf(stderr, "Error: no input file.\n"); exit(1); }
