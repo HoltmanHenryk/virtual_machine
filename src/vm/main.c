@@ -6,6 +6,7 @@
 
 #include "../spec.h"
 #include "opcodes.h"
+#include "error.h"
 
 #define ARR_LEN(arr) (sizeof(arr) / sizeof((arr)[0]))
 
@@ -320,7 +321,7 @@ int main(int argc, char **argv) {
 
         case OPCODE_COUNT: 
         default: {
-            printf("BAD OPCODE, HALTING\n");
+            vm_crash(&vm, EXCEPTION_UNKNOWN_INSTRUCTION, .description = "BAD OPCODE", .detailed_description = "Unknown or invalid opcode");
             vm.halted = true;
             break;
         }
