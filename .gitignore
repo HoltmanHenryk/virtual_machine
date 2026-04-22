@@ -3,6 +3,8 @@ disasm
 vmasm
 disassembled.asm
 file.txt
+VM.dump
+crash_log.txt
 *.obj
 *.bin
 

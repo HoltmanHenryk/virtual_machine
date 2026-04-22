@@ -281,7 +281,7 @@ void cmp(VM *vm) {
     vm_crash(vm, EXCEPTION_ILLEGAL_STATE, 
             .description = vm_text_format("Unable to determine CMP condition output, VALUE %d",
                 res),
-            .detailed_description = "Value is nether Greater than, less than or equal 0, Nan?",
+            .detailed_description = "Value is neither Greater than, less than or equal 0, Nan?",
             .dump_vm_struct = true);
 }
 
