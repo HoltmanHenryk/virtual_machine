@@ -51,6 +51,8 @@ typedef enum {
     EXCEPTION_ILLEGAL_READ,
     EXCEPTION_ILLEGAL_STATE,
     EXCEPTION_UNKNOWN_INSTRUCTION,
+    EXCEPTION_DIVISION_BY_ZERO,
+    EXCEPTION_JMP_OUT_OF_BOUNDS,
 
     ERROR_COUNT
 } Error_Type;
@@ -60,6 +62,8 @@ static const char *ErrorStrings[] = {
     [EXCEPTION_ILLEGAL_READ]        = STRINGFY(EXCEPTION_ILLEGAL_READ),
     [EXCEPTION_ILLEGAL_STATE]       = STRINGFY(EXCEPTION_ILLEGAL_STATE),
     [EXCEPTION_UNKNOWN_INSTRUCTION] = STRINGFY(EXCEPTION_UNKNOWN_INSTRUCTION),
+    [EXCEPTION_DIVISION_BY_ZERO]    = STRINGFY(EXCEPTION_DIVISION_BY_ZERO),
+    [EXCEPTION_JMP_OUT_OF_BOUNDS]   = STRINGFY(EXCEPTION_JMP_OUT_OF_BOUNDS),
 
 };
 
@@ -80,7 +84,7 @@ _Noreturn static inline void vm_crash_opt(const VM *vm, Error_Type type, crash_d
     FILE *file = fopen("crash_log.txt", "w");
     if(!file) {
         fprintf(stderr, "Failed to open crash_log.txt file\n"
-            "This somehow is a even bigger problem D:\n");
+            "There is somehow is a even bigger problem D:\n");
         exit(1);
     }
 

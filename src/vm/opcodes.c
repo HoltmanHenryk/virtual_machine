@@ -281,14 +281,23 @@ void cmp(VM *vm) {
     vm_crash(vm, EXCEPTION_ILLEGAL_STATE, 
             .description = vm_text_format("Unable to determine CMP condition output, VALUE %d",
                 res),
-            .detailed_description = "Value is neither Greater than, less than or equal 0, Nan?",
+            .detailed_description = "Value is neither Greater than, less than or equal 0, NaN?",
             .dump_vm_struct = true);
 }
 
 void jmp(VM *vm) {
     vm_verbose("JMP: {");
     vm->program_counter++;
+
     i32 jmp_to = vm->program[vm->program_counter];
+
+    if(jmp_to > MAX_PROGRAM_SIZE) {
+        vm_crash(vm, EXCEPTION_JMP_OUT_OF_BOUNDS,
+                .description = "Attempted to unconditionally jump out of program bounds",
+                .detailed_description = vm_text_format("Attemped to jump to %d", jmp_to));
+    }
+
+
     vm_verbose(" program_counter -> %.2d }\n", jmp_to);
     vm->program_counter = jmp_to;
 }
@@ -297,6 +306,13 @@ void je(VM *vm) {
     vm_verbose("JE: {");
     vm->program_counter++;
     i32 jump_to = vm->program[vm->program_counter];
+
+    if(jump_to > MAX_PROGRAM_SIZE) {
+        vm_crash(vm, EXCEPTION_JMP_OUT_OF_BOUNDS,
+                .description = "Attempted to conditionally jump (JE) out of program bounds",
+                .detailed_description = vm_text_format("Attemped to jump to %d", jump_to));
+    }
+
 
     if (vm->cond_flag == COND_ZERO) {
         vm_verbose(" cond: == 0; JUMPING }\n");
@@ -315,6 +331,13 @@ void jne(VM *vm) {
     vm->program_counter++;
     i32 jump_to = vm->program[vm->program_counter];
 
+    if(jump_to > MAX_PROGRAM_SIZE) {
+        vm_crash(vm, EXCEPTION_JMP_OUT_OF_BOUNDS,
+                .description = "Attempted to conditionally jump (JNE) out of program bounds",
+                .detailed_description = vm_text_format("Attemped to jump to %d", jump_to));
+    }
+
+
     if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_POSITIVE) {
         vm_verbose(" cond: != 0; JUMPING }\n");
         vm->program_counter = jump_to;
@@ -332,6 +355,13 @@ void jge(VM *vm) {
     vm->program_counter++;
     i32 jump_to = vm->program[vm->program_counter];
 
+    if(jump_to > MAX_PROGRAM_SIZE) {
+        vm_crash(vm, EXCEPTION_JMP_OUT_OF_BOUNDS,
+                .description = "Attempted to conditionally jump (JGE) out of program bounds",
+                .detailed_description = vm_text_format("Attemped to jump to %d", jump_to));
+    }
+
+
     if (vm->cond_flag == COND_POSITIVE || vm->cond_flag == COND_ZERO) {
         vm_verbose(" cond >= 0; JUMPING }\n");
         vm->program_counter = jump_to;
@@ -348,6 +378,13 @@ void jle(VM *vm) {
     vm_verbose("JLE: {");
     vm->program_counter++;
     i32 jump_to = vm->program[vm->program_counter];
+
+    if(jump_to > MAX_PROGRAM_SIZE) {
+        vm_crash(vm, EXCEPTION_JMP_OUT_OF_BOUNDS,
+                .description = "Attempted to conditionally jump (JLE) out of program bounds",
+                .detailed_description = vm_text_format("Attemped to jump to %d", jump_to));
+    }
+
 
     if (vm->cond_flag == COND_NEGATIVE || vm->cond_flag == COND_ZERO) {
         vm_verbose(" cond <= 0; JUMPING }\n");
@@ -434,6 +471,12 @@ void div_(VM *vm) {
     vm->program_counter++;
     i32 reg_b_ind = vm->program[vm->program_counter];
     i32 reg_b = vm->registers[reg_b_ind];
+
+    if(reg_b == (i32)0) {
+        vm_crash(vm, EXCEPTION_DIVISION_BY_ZERO,
+                .description = "Caught attemped integer divison by 0",
+                .detailed_description = vm_text_format("Attemped operation '%d / %d'", reg_a, reg_b));
+    }
 
     vm_verbose(" reg[%d] / reg[%d] | ", reg_a_ind, reg_b_ind);
 
