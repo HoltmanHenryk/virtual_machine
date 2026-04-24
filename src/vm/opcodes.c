@@ -1139,6 +1139,13 @@ void dlopen_(VM *vm) {
     vm_verbose(" --> '%s' }\n", string);
 
 
+    if(vm->extern_handle_count >= MAX_EXTERNAL_LIBS) {
+        vm_crash(vm, EXCEPTION_TOO_MANY_EXTERN_SYMBOLS,
+                .description = vm_text_format("Failed whilist trying to load '%s'", string),
+                .detailed_description = vm_text_format("Cannot load more than %d external libraries.", MAX_EXTERNAL_LIBS));
+
+    }
+    
 
     vm->extern_handle[vm->extern_handle_count].handle = dlopen(string, RTLD_LAZY | RTLD_GLOBAL);
 
