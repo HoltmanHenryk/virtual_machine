@@ -31,7 +31,6 @@ void vm_verbose_(VM *vm, const char *format, ...) {
 
 #define vm_verbose(fmt, ...) vm_verbose_(vm, (fmt), ##__VA_ARGS__)
 
-
 struct vm_ptr_info_t {
     bool RAM_addr;
     bool ROM_addr;
@@ -189,8 +188,32 @@ void mov(VM *vm) {
     vm->program_counter++;
     i32 tmp = vm->program[vm->program_counter];
     vm_verbose("%d -> ", vm->program[vm->program_counter]);
+
     vm->program_counter++;
-    vm->registers[vm->program[vm->program_counter]] = tmp;
+    i32 reg_idx = vm->program[vm->program_counter];
+
+    
+    switch(reg_idx) {
+        case NAMED_REGISTERS_SPLIT:
+        __attribute__ ((fallthrough));
+        case REG_RAM_START:
+        __attribute__ ((fallthrough));
+        case REG_HEAP_PTR:
+        __attribute__ ((fallthrough));
+        case REG_NULL:
+        __attribute__ ((fallthrough));
+        case REG_COUNT: {
+            
+                vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                        .description = vm_text_format("Caugth attempt of write to Read-Only register %d", reg_idx),
+                        .detailed_description = "Writing to Read-Only registers is not allowed");
+        } break;
+        default: 
+            break;
+    }
+    
+    vm->registers[reg_idx] = tmp;
+
     vm_verbose("register[%d] }", vm->program[vm->program_counter]);
     vm->program_counter++;
     vm_verbose("\n");
@@ -206,6 +229,23 @@ void ld(VM *vm) {
     vm_verbose("= %d -> ", value);
     vm->program_counter++;
     i32 reg_target = vm->program[vm->program_counter];
+
+    switch(reg_target) {
+        case NAMED_REGISTERS_SPLIT:
+        case REG_RAM_START:
+        case REG_HEAP_PTR:
+        case REG_NULL:
+        case REG_COUNT: {
+            
+                vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                        .description = vm_text_format("Caugth attempt of write to Read-Only register %d", reg_target),
+                        .detailed_description = "Writing to Read-Only registers is not allowed");
+        } break;
+        default: 
+            break;
+    }
+
+
     vm_verbose("register[%d] }", reg_target);
     vm->registers[reg_target] = value;
     vm->program_counter++;
@@ -239,6 +279,8 @@ void sto_pc(VM *vm) {
     i32 pc = vm->program_counter;
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
+
+
     vm->registers[reg_ind] = pc + 2; /* pos of the next operation after sto_pc argument */
     vm_verbose(" register[%d] = %d }\n", reg_ind, pc + 2);
     vm->program_counter++;
