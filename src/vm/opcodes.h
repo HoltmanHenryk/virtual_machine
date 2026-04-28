@@ -56,6 +56,7 @@ void rsha(VM *vm);
 void str(VM *vm);
 void dlopen_(VM *vm);
 void extern_(VM *vm);
+void extern_str(VM *vm);
 
 
 #endif /* OPCODES_H */

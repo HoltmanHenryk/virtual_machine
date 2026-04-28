@@ -61,6 +61,24 @@ static i32 *get_vm_ptr(VM *vm, i32 addr) {
 
 }
 
+static void vm_internal_setstring_all_libraries(VM *vm, const char *arg) {
+
+    for(i32 i = 0; i < vm->extern_handle_count; ++i) {
+        void *this_handle = vm->extern_handle[i].handle;
+
+        if(!this_handle) continue;
+
+        _internal_setstring func = (_internal_setstring)dlsym(this_handle, "__vmasm_internal_setstring");
+
+        if(func) {
+            i32 ret = func(arg);
+            vm->registers[REG_RET] = ret;
+        }
+
+    }
+
+}
+
 void no_op(VM *vm) {
     vm_verbose("NO_OP\n");
     vm->program_counter++;
@@ -1195,11 +1213,16 @@ void extern_(VM *vm) {
 
     string[length] = '\0';
 
-
-    i32 arg_a = vm->registers[REG_ARG_A];
-    i32 arg_b = vm->registers[REG_ARG_B];
-    i32 arg_c = vm->registers[REG_ARG_C];
-    i32 arg_d = vm->registers[REG_ARG_D];
+    VMASMObject tmp = (VMASMObject) {
+        .arg_a = vm->registers[REG_ARG_A],
+        .arg_b = vm->registers[REG_ARG_B],
+        .arg_c = vm->registers[REG_ARG_C],
+        .arg_d = vm->registers[REG_ARG_D],
+        .arg_e = vm->registers[REG_ARG_E],
+        .arg_f = vm->registers[REG_ARG_F],
+        .arg_g = vm->registers[REG_ARG_G],
+        .arg_h = vm->registers[REG_ARG_H],
+    };
 
     void *symbol = dlsym(RTLD_DEFAULT, string);
 
@@ -1212,9 +1235,9 @@ void extern_(VM *vm) {
     
     extern_signature f = (extern_signature)symbol;
 
-    i32 result = f(arg_a, arg_b, arg_c, arg_d);
+    i32 result = f(tmp);
 
-    vm_verbose(" $ret = %s(%d, %d, %d, %d); -> %d }\n", string, arg_a, arg_b, arg_c, arg_d, result);
+    vm_verbose(" $ret = %s((VMASMObject){"VMASMObject_Fmt"}); -> %d }\n", string, VMASMObject_Arg(tmp), result);
 
     vm->registers[REG_RET] = result;
 
@@ -1223,4 +1246,46 @@ void extern_(VM *vm) {
     string = NULL;
 
     vm->program_counter++;
+}
+
+void extern_str(VM *vm) {
+
+    vm_verbose("EXTERN_STR: {");
+    vm->program_counter++;
+
+    i32 buff_addr = vm->program[vm->program_counter];
+
+    vm->program_counter++;
+
+    i32 reg_szof_addr = vm->program[vm->program_counter];
+
+    i32 length = vm->registers[reg_szof_addr];
+
+    char *string = malloc(length + 1);
+
+    for(int i = 0; i < length; ++i) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
+
+        if(ptr) {
+            char c = (char)(*ptr & 0xFF);
+            string[i] = c;
+
+            if(c == '\0') break;
+        } else {
+            string[i] = '\0';
+            break;
+        }
+    }
+
+    string[length] = '\0';
+
+    vm_verbose(" set global string to -> '%s'}\n", string);
+
+    vm_internal_setstring_all_libraries(vm, string);
+
+    free(string);
+    string = NULL;
+
+    vm->program_counter++;
+
 }
