@@ -337,6 +337,10 @@ int main(int argc, char **argv) {
             extern_str(&vm);
         } break;
 
+        case R_EXTERN: {
+            r_extern(&vm);
+        } break;
+
         case OPCODE_COUNT: 
         default: {
             vm_crash(&vm, EXCEPTION_UNKNOWN_INSTRUCTION, .description = "BAD OPCODE", .detailed_description = "Unknown or invalid opcode");
