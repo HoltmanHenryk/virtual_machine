@@ -6,8 +6,15 @@ dlopen @libfirst, $10
 strlen @libsecond, $10
 dlopen @libsecond, $10
 
+mov 10, $arg_a
+mov 20, $arg_b
+mov 30, $arg_c
+
 strlen @first_func, $5
 extern @first_func, $5
+
+strlen @string_argument, $5
+extern_str @string_argument, $5
 
 strlen @second_func, $5
 extern @second_func, $5
@@ -21,6 +28,7 @@ halt
     libfirst: "./example_programs/externlib/libfirst.so"
     libsecond: "./example_programs/externlib/libsecond.so"
     first_func: "hello_from_lib"
+    string_argument: "USER"
     second_func: "hello_another_lib"
 
 

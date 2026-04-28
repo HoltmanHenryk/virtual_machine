@@ -1,10 +1,9 @@
 #include <stdio.h>
-#include <stdint.h>
+#include "../../VMASM.h"
 
-typedef int32_t i32;
 
-i32 hello_from_lib(void) {
-    printf("Hello, from the first library!!\n");
+WORD hello_from_lib(VMASMObject obj) {
+    printf("Hello, from the first library: %d %d %d\n", obj.arg_a, obj.arg_b, obj.arg_c);
     return 0;
 }
 

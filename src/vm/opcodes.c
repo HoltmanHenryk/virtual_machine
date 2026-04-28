@@ -61,6 +61,24 @@ static i32 *get_vm_ptr(VM *vm, i32 addr) {
 
 }
 
+static void vm_internal_setstring_all_libraries(VM *vm, const char *arg) {
+
+    for(i32 i = 0; i < vm->extern_handle_count; ++i) {
+        void *this_handle = vm->extern_handle[i].handle;
+
+        if(!this_handle) continue;
+
+        _internal_setstring func = (_internal_setstring)dlsym(this_handle, "__vmasm_internal_setstring");
+
+        if(func) {
+            i32 ret = func(arg);
+            vm->registers[REG_RET] = ret;
+        }
+
+    }
+
+}
+
 void no_op(VM *vm) {
     vm_verbose("NO_OP\n");
     vm->program_counter++;
@@ -189,8 +207,29 @@ void mov(VM *vm) {
     vm->program_counter++;
     i32 tmp = vm->program[vm->program_counter];
     vm_verbose("%d -> ", vm->program[vm->program_counter]);
+
     vm->program_counter++;
-    vm->registers[vm->program[vm->program_counter]] = tmp;
+    i32 reg_idx = vm->program[vm->program_counter];
+
+    switch(reg_idx) {
+	case NAMED_REGISTERS_SPLIT:
+        __attribute__ ((fallthrough));
+        case REG_RAM_START:
+        __attribute__ ((fallthrough));
+        case REG_HEAP_PTR:
+        __attribute__ ((fallthrough));
+        case REG_NULL:
+        __attribute__ ((fallthrough));
+        case REG_COUNT: {
+                vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                        .description = vm_text_format("Caugth attempt of write to Read-Only register %d", reg_idx),
+                        .detailed_description = "Writing to Read-Only registers is not allowed");
+        } break;
+        default: 
+            break;
+    }
+
+    vm->registers[reg_idx] = tmp;
     vm_verbose("register[%d] }", vm->program[vm->program_counter]);
     vm->program_counter++;
     vm_verbose("\n");
@@ -206,6 +245,25 @@ void ld(VM *vm) {
     vm_verbose("= %d -> ", value);
     vm->program_counter++;
     i32 reg_target = vm->program[vm->program_counter];
+
+    switch(reg_target) {
+	case NAMED_REGISTERS_SPLIT:
+        __attribute__ ((fallthrough));
+        case REG_RAM_START:
+        __attribute__ ((fallthrough));
+        case REG_HEAP_PTR:
+        __attribute__ ((fallthrough));
+        case REG_NULL:
+        __attribute__ ((fallthrough));
+        case REG_COUNT: {
+                vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                        .description = vm_text_format("Caugth attempt of write to Read-Only register %d", reg_target),
+                        .detailed_description = "Writing to Read-Only registers is not allowed");
+        } break;
+        default: 
+            break;
+    }
+
     vm_verbose("register[%d] }", reg_target);
     vm->registers[reg_target] = value;
     vm->program_counter++;
@@ -702,6 +760,7 @@ void syscall_(VM *vm) {
             if(null_terminator_ptr) *null_terminator_ptr = 0;
             
             vm->registers[REG_HEAP_PTR] += (bytes_read_total + 1);
+            vm->registers[REG_RET] = (bytes_read_total);
             vm->registers[REG_RET] = bytes_read_total;
             vm_verbose(" read(%d, %d, %d) -> read %d bytes }\n", fd, buff_addr, count, bytes_read_total);
 
@@ -1195,11 +1254,16 @@ void extern_(VM *vm) {
 
     string[length] = '\0';
 
-
-    i32 arg_a = vm->registers[REG_ARG_A];
-    i32 arg_b = vm->registers[REG_ARG_B];
-    i32 arg_c = vm->registers[REG_ARG_C];
-    i32 arg_d = vm->registers[REG_ARG_D];
+    VMASMObject tmp = (VMASMObject) {
+        .arg_a = vm->registers[REG_ARG_A],
+        .arg_b = vm->registers[REG_ARG_B],
+        .arg_c = vm->registers[REG_ARG_C],
+        .arg_d = vm->registers[REG_ARG_D],
+        .arg_e = vm->registers[REG_ARG_E],
+        .arg_f = vm->registers[REG_ARG_F],
+        .arg_g = vm->registers[REG_ARG_G],
+        .arg_h = vm->registers[REG_ARG_H],
+    };
 
     void *symbol = dlsym(RTLD_DEFAULT, string);
 
@@ -1207,14 +1271,123 @@ void extern_(VM *vm) {
         vm_crash(vm, EXCEPTION_EXTSYM_RESOLUTION_FAIL,
                 .description = vm_text_format("While trying to resolve external symbol '%s'",
                     string),
-                .detailed_description = vm_text_format("Is the respective library open?"));
+                .detailed_description = vm_text_format("Does this symbol exist in the library?"));
     }
     
     extern_signature f = (extern_signature)symbol;
 
-    i32 result = f(arg_a, arg_b, arg_c, arg_d);
+    i32 result = f(tmp);
 
-    vm_verbose(" $ret = %s(%d, %d, %d, %d); -> %d }\n", string, arg_a, arg_b, arg_c, arg_d, result);
+    vm_verbose(" $ret = %s((VMASMObject){"VMASMObject_Fmt"}); -> %d }\n", string, VMASMObject_Arg(tmp), result);
+
+    vm->registers[REG_RET] = result;
+
+
+    free(string);
+    string = NULL;
+
+    vm->program_counter++;
+}
+
+void extern_str(VM *vm) {
+
+    vm_verbose("EXTERN_STR: {");
+    vm->program_counter++;
+
+    i32 buff_addr = vm->program[vm->program_counter];
+
+    vm->program_counter++;
+
+    i32 reg_szof_addr = vm->program[vm->program_counter];
+
+    i32 length = vm->registers[reg_szof_addr];
+
+    char *string = malloc(length + 1);
+
+    for(int i = 0; i < length; ++i) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
+
+        if(ptr) {
+            char c = (char)(*ptr & 0xFF);
+            string[i] = c;
+
+            if(c == '\0') break;
+        } else {
+            string[i] = '\0';
+            break;
+        }
+    }
+
+    string[length] = '\0';
+
+    vm_verbose(" set global string to -> '%s'}\n", string);
+
+    vm_internal_setstring_all_libraries(vm, string);
+
+    free(string);
+    string = NULL;
+
+    vm->program_counter++;
+
+}
+
+void r_extern(VM *vm) {
+    vm_verbose("R_EXTERN: {");
+    vm->program_counter++;
+
+    i32 reg_idx = vm->program[vm->program_counter];
+
+    i32 buff_addr = vm->registers[reg_idx];
+
+    vm->program_counter++;
+
+    i32 reg_szof_addr = vm->program[vm->program_counter];
+
+    i32 length = vm->registers[reg_szof_addr];
+
+    char *string = malloc(length + 1);
+
+    for(int i = 0; i < length; ++i) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
+
+        if(ptr) {
+            char c = (char)(*ptr & 0xFF);
+            string[i] = c;
+
+            if(c == '\0') break;
+        } else {
+            string[i] = '\0';
+            break;
+        }
+    }
+
+    string[length] = '\0';
+
+    VMASMObject tmp = (VMASMObject) {
+        .arg_a = vm->registers[REG_ARG_A],
+        .arg_b = vm->registers[REG_ARG_B],
+        .arg_c = vm->registers[REG_ARG_C],
+        .arg_d = vm->registers[REG_ARG_D],
+        .arg_e = vm->registers[REG_ARG_E],
+        .arg_f = vm->registers[REG_ARG_F],
+        .arg_g = vm->registers[REG_ARG_G],
+        .arg_h = vm->registers[REG_ARG_H],
+    };
+
+    void *symbol = dlsym(RTLD_DEFAULT, string);
+
+    if(symbol == NULL) {
+        vm_crash(vm, EXCEPTION_EXTSYM_RESOLUTION_FAIL,
+                .description = vm_text_format("While trying to resolve external symbol '%s'",
+                    string),
+                .detailed_description = vm_text_format("Does this symbol exist in the library?"));
+    }
+    
+    extern_signature f = (extern_signature)symbol;
+
+    i32 result = f(tmp);
+
+    vm_verbose(" $ret = %s((VMASMObject){"VMASMObject_Fmt"}); -> %d }\n", string, VMASMObject_Arg(tmp), result);
 
     vm->registers[REG_RET] = result;
 
