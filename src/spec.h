@@ -130,6 +130,7 @@ typedef enum : i32 {
     DLOPEN,
     EXTERN,
     EXTERN_STR,
+    R_EXTERN,
 
     OPCODE_COUNT
 } Opcodes;
@@ -206,7 +207,8 @@ static const Instruction_spec ASSEMBLY_TABLE[] =  {
     [STR]            =  { "str", 2,            { ARG_REG, ARG_REG}},
     [DLOPEN]         =  { "dlopen", 2,         { ARG_VAL, ARG_REG}},
     [EXTERN]         =  { "extern", 2,         { ARG_VAL, ARG_REG}},
-    [EXTERN_STR]     =  { "extern_str", 2,  { ARG_VAL, ARG_REG}},
+    [EXTERN_STR]     =  { "extern_str", 2,     { ARG_VAL, ARG_REG}},
+    [R_EXTERN]       =  { "r_extern", 2,       { ARG_REG, ARG_REG}},
 };
 
 // :Tabularize /[={]
