@@ -58,6 +58,10 @@ typedef enum : i32 {
     REG_ARG_B,
     REG_ARG_C,
     REG_ARG_D,
+    REG_ARG_E,
+    REG_ARG_F,
+    REG_ARG_G,
+    REG_ARG_H,
     REG_RET,
 
     REG_RAM_START,
@@ -125,6 +129,7 @@ typedef enum : i32 {
     STR,
     DLOPEN,
     EXTERN,
+    EXTERN_STR,
 
     OPCODE_COUNT
 } Opcodes;
@@ -201,6 +206,7 @@ static const Instruction_spec ASSEMBLY_TABLE[] =  {
     [STR]            =  { "str", 2,            { ARG_REG, ARG_REG}},
     [DLOPEN]         =  { "dlopen", 2,         { ARG_VAL, ARG_REG}},
     [EXTERN]         =  { "extern", 2,         { ARG_VAL, ARG_REG}},
+    [EXTERN_STR]     =  { "extern_str", 2,  { ARG_VAL, ARG_REG}},
 };
 
 // :Tabularize /[={]
@@ -222,6 +228,10 @@ static const Named_register NAMED_REGISTERS[] = {
      { "arg_b", REG_ARG_B},
      { "arg_c", REG_ARG_C},
      { "arg_d", REG_ARG_D},
+     { "arg_e", REG_ARG_E},
+     { "arg_f", REG_ARG_F},
+     { "arg_g", REG_ARG_G},
+     { "arg_h", REG_ARG_H},
      { "ret",   REG_RET},
      { "ram_start", REG_RAM_START},
      { "heap", REG_HEAP_PTR},
@@ -291,11 +301,28 @@ typedef struct {
     i32 program_start;
 } VMFileHeader;
 
+
+typedef i32 (*_internal_setstring)(const char *);
+
 typedef struct {
     void *handle;
 } VMExternHandle;
 
-typedef i32 (*extern_signature)(i32, i32, i32, i32);
+typedef struct {
+    i32 arg_a;
+    i32 arg_b;
+    i32 arg_c;
+    i32 arg_d;
+    i32 arg_e;
+    i32 arg_f;
+    i32 arg_g;
+    i32 arg_h;
+} VMASMObject;
+ 
+#define VMASMObject_Fmt "%d, %d, %d, %d, %d, %d, %d, %d"
+#define VMASMObject_Arg(obj) (obj).arg_a, (obj).arg_b, (obj).arg_c, (obj).arg_d, (obj).arg_e, (obj).arg_f, (obj).arg_g, (obj).arg_h
+
+typedef i32 (*extern_signature)(VMASMObject);
 
 typedef struct {
     i32 program_counter;
