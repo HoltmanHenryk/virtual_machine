@@ -975,8 +975,6 @@ void ldxo(VM *vm) {
     i32 base_reg_idx = vm->program[vm->program_counter];
     i32 base_addr = vm->registers[base_reg_idx];
 
-    //i32 *base_addr_value = get_vm_ptr(vm, base_addr);
-
     vm->program_counter++;
     i32 index_reg_idx = vm->program[vm->program_counter];
     i32 index_offset = vm->registers[index_reg_idx];
@@ -984,16 +982,45 @@ void ldxo(VM *vm) {
     vm->program_counter++;
     i32 dest_reg = vm->program[vm->program_counter];
 
+    if(dest_reg < 0 || dest_reg >= REG_COUNT) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_STATE, 
+                .description = vm_text_format("Invalid register index %d in LDO", dest_reg));
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+
+    switch(dest_reg) {
+	case NAMED_REGISTERS_SPLIT:
+        case REG_RAM_START:
+        case REG_HEAP_PTR:
+        case REG_NULL:
+        case REG_COUNT: {
+                vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                        .description = vm_text_format("Caugth attempt of write to Read-Only register %d", dest_reg),
+                        .detailed_description = "Writing to Read-Only registers is not allowed");
+        } break;
+        default: 
+            break;
+    }
+
+#pragma GCC diagnostic pop
+
+
+
 
     i32 *final_addr = get_vm_ptr(vm, base_addr + index_offset);
 
-    if(vm_ptr_info.ROM_addr) {
-        vm_verbose(" base$%d(%d)(ROM)", base_reg_idx, base_addr);
+    if(final_addr == NULL) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_READ,
+                .description = vm_text_format("Attempted to LDXO from invalid address %d", final_addr),
+                .detailed_description = "Address is outsite both ROM and RAM addressing spaces");
     }
 
-    if(vm_ptr_info.RAM_addr) {
-        vm_verbose(" base$%d(%d)(RAM)", base_reg_idx, base_addr);
-    }
+
+
+    if(vm_ptr_info.ROM_addr) { vm_verbose(" base$%d(%d)(ROM)", base_reg_idx, base_addr); }
+    if(vm_ptr_info.RAM_addr) { vm_verbose(" base$%d(%d)(RAM)", base_reg_idx, base_addr); }
 
 
     vm_verbose(" + $%d(offset=%d)", index_reg_idx, index_offset);
