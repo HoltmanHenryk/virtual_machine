@@ -211,15 +211,14 @@ void mov(VM *vm) {
     vm->program_counter++;
     i32 reg_idx = vm->program[vm->program_counter];
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+
     switch(reg_idx) {
 	case NAMED_REGISTERS_SPLIT:
-        __attribute__ ((fallthrough));
         case REG_RAM_START:
-        __attribute__ ((fallthrough));
         case REG_HEAP_PTR:
-        __attribute__ ((fallthrough));
         case REG_NULL:
-        __attribute__ ((fallthrough));
         case REG_COUNT: {
                 vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
                         .description = vm_text_format("Caugth attempt of write to Read-Only register %d", reg_idx),
@@ -228,6 +227,8 @@ void mov(VM *vm) {
         default: 
             break;
     }
+
+#pragma GCC diagnostic pop
 
     vm->registers[reg_idx] = tmp;
     vm_verbose("register[%d] }", vm->program[vm->program_counter]);
@@ -246,15 +247,14 @@ void ld(VM *vm) {
     vm->program_counter++;
     i32 reg_target = vm->program[vm->program_counter];
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+
     switch(reg_target) {
 	case NAMED_REGISTERS_SPLIT:
-        __attribute__ ((fallthrough));
         case REG_RAM_START:
-        __attribute__ ((fallthrough));
         case REG_HEAP_PTR:
-        __attribute__ ((fallthrough));
         case REG_NULL:
-        __attribute__ ((fallthrough));
         case REG_COUNT: {
                 vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
                         .description = vm_text_format("Caugth attempt of write to Read-Only register %d", reg_target),
@@ -263,6 +263,8 @@ void ld(VM *vm) {
         default: 
             break;
     }
+
+#pragma GCC diagnostic pop
 
     vm_verbose("register[%d] }", reg_target);
     vm->registers[reg_target] = value;
@@ -571,6 +573,10 @@ void mod(VM *vm) {
 void push(VM *vm) {
     vm_verbose("PUSH: {");
 
+    if(vm->stack_head >= MAX_STACK_SIZE) {
+        vm_crash(vm, EXCEPTION_STACK_OVERFLOW, .description = "Stack limit reached");
+    }
+
     vm->program_counter++;
     i32 reg_ind = vm->program[vm->program_counter];
     i32 reg_value = vm->registers[reg_ind];
@@ -584,8 +590,12 @@ void push(VM *vm) {
 }
 
 void i_push(VM *vm) {
-
     vm_verbose("I_PUSH: {");
+
+    if(vm->stack_head >= MAX_STACK_SIZE) {
+        vm_crash(vm, EXCEPTION_STACK_OVERFLOW, .description = "Stack limit reached");
+    }
+
 
     vm->program_counter++;
     i32 value = vm->program[vm->program_counter];
@@ -599,8 +609,11 @@ void i_push(VM *vm) {
 }
 
 void pop(VM *vm) {
-
     vm_verbose("POP: {");
+
+    if(vm->stack_head <= 0) {
+        vm_crash(vm, EXCEPTION_STACK_UNDERFLOW, .description = "Pop attempted on empty stack");
+    }
 
     vm->program_counter++;
 
@@ -615,6 +628,11 @@ void pop(VM *vm) {
 
 void void_pop(VM *vm) {
     vm_verbose("VOID_POP: {");
+
+    if(vm->stack_head <= 0) {
+        vm_crash(vm, EXCEPTION_STACK_UNDERFLOW, .description = "Pop attempted on empty stack");
+    }
+
 
     vm->stack_head--;
     vm_verbose(" vm->stack_head = %d }\n", vm->stack_head);
@@ -713,7 +731,11 @@ void syscall_(VM *vm) {
 	    */
 
 	    int fd = open(path_buffer, flags, mode);
-            if(fd == 1) {perror("file failed to open"); exit(1);}
+            if(fd == -1) {
+                vm_crash(vm, EXCEPTION_OPEN_SYSCALL_FAIL,
+                        .description = vm_text_format("Failed whilest trying to open '%s'", path_buffer),
+                        .detailed_description = "Could not open() the file");
+            }
 	    vm->registers[REG_ARG_A] = (i32)fd;
 
 	    vm_verbose(" open(\"%s\", %d, %d) -> fd: %d }\n", path_buffer, flags, mode, fd);
@@ -736,7 +758,7 @@ void syscall_(VM *vm) {
 
             i32 bytes_read_total = 0;
 
-            while(bytes_read_total < 255) {
+            while(bytes_read_total < count) {
                 char c;
                 ssize_t n = read(fd, &c, 1);
 
@@ -760,7 +782,6 @@ void syscall_(VM *vm) {
             if(null_terminator_ptr) *null_terminator_ptr = 0;
             
             vm->registers[REG_HEAP_PTR] += (bytes_read_total + 1);
-            vm->registers[REG_RET] = (bytes_read_total);
             vm->registers[REG_RET] = bytes_read_total;
             vm_verbose(" read(%d, %d, %d) -> read %d bytes }\n", fd, buff_addr, count, bytes_read_total);
 
@@ -892,18 +913,48 @@ void ldo(VM *vm) {
     vm_verbose("LDO: {");
     vm->program_counter++;
 
-    i32 *data_addr = get_vm_ptr(vm, vm->program[vm->program_counter]);
+    i32 addr_val = vm->program[vm->program_counter];
+    i32 *data_addr = get_vm_ptr(vm, addr_val);
 
-    if(vm_ptr_info.ROM_addr) {
-        vm_verbose(" @addr=%d(ROM)", vm_ptr_info.addr);
+    if(data_addr == NULL) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_READ,
+                .description = vm_text_format("Attempted to LDO from invalid address %d", addr_val),
+                .detailed_description = "Address is outsite both ROM and RAM addressing spaces");
     }
 
-    if(vm_ptr_info.RAM_addr) {
-        vm_verbose(" @addr=%d(RAM)", vm_ptr_info.addr);
-    }
+
+    if(vm_ptr_info.ROM_addr) { vm_verbose(" @addr=%d(ROM)", vm_ptr_info.addr); }
+    if(vm_ptr_info.RAM_addr) { vm_verbose(" @addr=%d(RAM)", vm_ptr_info.addr); }
 
     vm->program_counter++;
     i32 dest_reg = vm->program[vm->program_counter];
+
+
+    if(dest_reg < 0 || dest_reg >= REG_COUNT) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_STATE, 
+                .description = vm_text_format("Invalid register index %d in LDO", dest_reg));
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+
+    switch(dest_reg) {
+	case NAMED_REGISTERS_SPLIT:
+        case REG_RAM_START:
+        case REG_HEAP_PTR:
+        case REG_NULL:
+        case REG_COUNT: {
+                vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                        .description = vm_text_format("Caugth attempt of write to Read-Only register %d", dest_reg),
+                        .detailed_description = "Writing to Read-Only registers is not allowed");
+        } break;
+        default: 
+            break;
+    }
+
+#pragma GCC diagnostic pop
+
+
     vm_verbose(" -> $%d", dest_reg);
 
 
@@ -924,8 +975,6 @@ void ldxo(VM *vm) {
     i32 base_reg_idx = vm->program[vm->program_counter];
     i32 base_addr = vm->registers[base_reg_idx];
 
-    //i32 *base_addr_value = get_vm_ptr(vm, base_addr);
-
     vm->program_counter++;
     i32 index_reg_idx = vm->program[vm->program_counter];
     i32 index_offset = vm->registers[index_reg_idx];
@@ -933,16 +982,45 @@ void ldxo(VM *vm) {
     vm->program_counter++;
     i32 dest_reg = vm->program[vm->program_counter];
 
+    if(dest_reg < 0 || dest_reg >= REG_COUNT) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_STATE, 
+                .description = vm_text_format("Invalid register index %d in LDO", dest_reg));
+    }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+
+    switch(dest_reg) {
+	case NAMED_REGISTERS_SPLIT:
+        case REG_RAM_START:
+        case REG_HEAP_PTR:
+        case REG_NULL:
+        case REG_COUNT: {
+                vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                        .description = vm_text_format("Caugth attempt of write to Read-Only register %d", dest_reg),
+                        .detailed_description = "Writing to Read-Only registers is not allowed");
+        } break;
+        default: 
+            break;
+    }
+
+#pragma GCC diagnostic pop
+
+
+
 
     i32 *final_addr = get_vm_ptr(vm, base_addr + index_offset);
 
-    if(vm_ptr_info.ROM_addr) {
-        vm_verbose(" base$%d(%d)(ROM)", base_reg_idx, base_addr);
+    if(final_addr == NULL) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_READ,
+                .description = vm_text_format("Attempted to LDXO from invalid address %d", final_addr),
+                .detailed_description = "Address is outsite both ROM and RAM addressing spaces");
     }
 
-    if(vm_ptr_info.RAM_addr) {
-        vm_verbose(" base$%d(%d)(RAM)", base_reg_idx, base_addr);
-    }
+
+
+    if(vm_ptr_info.ROM_addr) { vm_verbose(" base$%d(%d)(ROM)", base_reg_idx, base_addr); }
+    if(vm_ptr_info.RAM_addr) { vm_verbose(" base$%d(%d)(RAM)", base_reg_idx, base_addr); }
 
 
     vm_verbose(" + $%d(offset=%d)", index_reg_idx, index_offset);
@@ -1391,6 +1469,46 @@ void r_extern(VM *vm) {
 
     vm->registers[REG_RET] = result;
 
+
+    free(string);
+    string = NULL;
+
+    vm->program_counter++;
+}
+
+void r_extern_str(VM *vm) {
+    vm_verbose("R_EXTERN_STR: {");
+    vm->program_counter++;
+
+    i32 reg_addr_idx = vm->program[vm->program_counter];
+    i32 buff_addr = vm->registers[reg_addr_idx];
+
+    vm_verbose(" buff_addr=$%d(%d)", reg_addr_idx, buff_addr);
+    vm->program_counter++;
+
+    i32 reg_szof_idx = vm->program[vm->program_counter];
+    i32 length = vm->registers[reg_szof_idx];
+
+    char *string = malloc(length + 1);
+
+    for (int i = 0; i < length; ++i) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
+
+        if(ptr) {
+            char c = (char)(*ptr & 0xFF);
+            string[i] = c;
+
+            if(c == '\0') break;
+        } else {
+            string[i] = '\0';
+            break;
+        }
+    }
+    string[length] = '\0';
+
+    vm_verbose(" set global string to -> '%s' }\n", string);
+
+    vm_internal_setstring_all_libraries(vm, string);
 
     free(string);
     string = NULL;

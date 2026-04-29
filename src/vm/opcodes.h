@@ -58,6 +58,7 @@ void dlopen_(VM *vm);
 void extern_(VM *vm);
 void extern_str(VM *vm);
 void r_extern(VM *vm);
+void r_extern_str(VM *vm);
 
 
 #endif /* OPCODES_H */
