@@ -168,6 +168,9 @@ halt
 |STR| STore to Ram the value stored in $reg\_a in the position stored by $reg\_b| 2| str $reg\_a, $reg\_b|
 |DLOPEN| Open a Dynamic Linked library (.so) to allow executing its exposed symbols, takes a data pointer and a length | 2 | dlopen @libpath, $length |
 |EXTERN| Execute a extern function exposed by dlopen. Takes a data pointer and a length | 2 | extern @function\_name, $length|
+|EXTERN\_STR| Sets the 'global string' of all of the open libraries, pointer and a length| 2 | extern\_str @string, $length|
+|R\_EXTERN| Execute a extern function exposed by dlopen. Reads data pointer by first argument and a length| 2 | r\_extern $reg\_a, $length|
+|R\_EXTERN\_STR| Sets the 'global string' to that of the data pointer by the first arg, and a length| r\_extern\_str $ptr, $length|
 
 
 - $reg = register index (Ex: $1, $5, $10)
