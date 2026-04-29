@@ -713,7 +713,11 @@ void syscall_(VM *vm) {
 	    */
 
 	    int fd = open(path_buffer, flags, mode);
-            if(fd == 1) {perror("file failed to open"); exit(1);}
+            if(fd == -1) {
+                vm_crash(vm, EXCEPTION_OPEN_SYSCALL_FAIL,
+                        .description = vm_text_format("Failed whilest trying to open '%s'", path_buffer),
+                        .detailed_description = "Could not open() the file");
+            }
 	    vm->registers[REG_ARG_A] = (i32)fd;
 
 	    vm_verbose(" open(\"%s\", %d, %d) -> fd: %d }\n", path_buffer, flags, mode, fd);
@@ -736,7 +740,7 @@ void syscall_(VM *vm) {
 
             i32 bytes_read_total = 0;
 
-            while(bytes_read_total < 255) {
+            while(bytes_read_total < count) {
                 char c;
                 ssize_t n = read(fd, &c, 1);
 
@@ -760,7 +764,6 @@ void syscall_(VM *vm) {
             if(null_terminator_ptr) *null_terminator_ptr = 0;
             
             vm->registers[REG_HEAP_PTR] += (bytes_read_total + 1);
-            vm->registers[REG_RET] = (bytes_read_total);
             vm->registers[REG_RET] = bytes_read_total;
             vm_verbose(" read(%d, %d, %d) -> read %d bytes }\n", fd, buff_addr, count, bytes_read_total);
 
