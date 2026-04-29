@@ -1397,3 +1397,43 @@ void r_extern(VM *vm) {
 
     vm->program_counter++;
 }
+
+void r_extern_str(VM *vm) {
+    vm_verbose("R_EXTERN_STR: {");
+    vm->program_counter++;
+
+    i32 reg_addr_idx = vm->program[vm->program_counter];
+    i32 buff_addr = vm->registers[reg_addr_idx];
+
+    vm_verbose(" buff_addr=$%d(%d)", reg_addr_idx, buff_addr);
+    vm->program_counter++;
+
+    i32 reg_szof_idx = vm->program[vm->program_counter];
+    i32 length = vm->registers[reg_szof_idx];
+
+    char *string = malloc(length + 1);
+
+    for (int i = 0; i < length; ++i) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
+
+        if(ptr) {
+            char c = (char)(*ptr & 0xFF);
+            string[i] = c;
+
+            if(c == '\0') break;
+        } else {
+            string[i] = '\0';
+            break;
+        }
+    }
+    string[length] = '\0';
+
+    vm_verbose(" set global string to -> '%s' }\n", string);
+
+    vm_internal_setstring_all_libraries(vm, string);
+
+    free(string);
+    string = NULL;
+
+    vm->program_counter++;
+}
