@@ -81,6 +81,31 @@ static bool is_readonly_register(i32 reg_idx) {
 #pragma GCC diagnostic pop
 }
 
+static char *vm_get_string(VM *vm, i32 buff_addr, i32 length) {
+
+    if(length < 0 || length > MAX_PROGRAM_SIZE) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_STATE,
+                .description = "Invalid string length");
+    }
+
+    char *string = malloc(length + 1);
+    if (!string) return NULL;
+
+    for (i32 i = 0; i < length; ++i) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
+        if(ptr) {
+            char c = (char)(*ptr & 0xFF);
+            string[i] = c;
+            if(c == '\0') break;
+        } else {
+            string[i] = '\0';
+            break;
+        }
+    }
+    string[length] = '\0';
+    return string;
+}
+
 static void vm_internal_setstring_all_libraries(VM *vm, const char *arg) {
 
     for(i32 i = 0; i < vm->extern_handle_count; ++i) {
@@ -684,15 +709,29 @@ void syscall_(VM *vm) {
             
             vm_verbose(" write(%d, 0x%x, %d)", fd, buff_addr, count);
 
-            for(i32 i = 0; i < count; ++i) {
-                i32 *ptr = get_vm_ptr(vm, buff_addr + i);
-                if(ptr) {
-                    char c = (char)(*ptr & 0xFF);
-                    write(fd, &c, 1);
-                }
-            }
-            fsync(fd);
+            char host_buffer[1024];
+            i32 processed = 0;
 
+            while (processed < count) {
+                i32 chunk = (count - processed > 1024) ? 1024 : (count - processed);
+                i32 actual_bytes = 0;
+
+
+                for(i32 i = 0; i < chunk; ++i) {
+                    i32 *ptr = get_vm_ptr(vm, buff_addr + processed + i);
+                    if(ptr) {
+                        host_buffer[actual_bytes++] = (char)(*ptr & 0xFF);
+                    }
+                }
+
+                if (actual_bytes > 0) {
+                    write(fd, host_buffer, actual_bytes);
+                }
+                processed += chunk;
+
+            }
+
+            fsync(fd);
             vm_verbose(" }\n");
         } break;
 
@@ -771,8 +810,6 @@ void syscall_(VM *vm) {
                 if (n <= 0) break; /* error or EOF */
                 
                 if(fd == 0 && c == '\n') break;
-
-                vm->registers[REG_ARG_A] = (i32)n;
 
 
                 i32 *ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
@@ -1233,25 +1270,7 @@ void dlopen_(VM *vm) {
 
     i32 length = vm->registers[reg_szof_addr];
 
-    char *string = malloc(length + 1);
-
-    for(int i = 0; i < length; ++i) {
-        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
-
-        if(ptr) {
-            char c = (char)(*ptr & 0xFF);
-            string[i] = c;
-
-            if(c == '\0') break;
-        } else {
-            string[i] = '\0';
-            break;
-        }
-    }
-
-    string[length] = '\0';
-
-
+    char *string = vm_get_string(vm, buff_addr, length);
     vm_verbose(" --> '%s' }\n", string);
 
 
@@ -1275,8 +1294,6 @@ void dlopen_(VM *vm) {
     vm->extern_handle_count++;
 
     free(string);
-    string = NULL;
-
     vm->program_counter++;
 }
 
@@ -1293,24 +1310,9 @@ void extern_(VM *vm) {
 
     i32 length = vm->registers[reg_szof_addr];
 
-    char *string = malloc(length + 1);
+    char *string = vm_get_string(vm, buff_addr, length);
 
-    for(int i = 0; i < length; ++i) {
-        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
-
-        if(ptr) {
-            char c = (char)(*ptr & 0xFF);
-            string[i] = c;
-
-            if(c == '\0') break;
-        } else {
-            string[i] = '\0';
-            break;
-        }
-    }
-
-    string[length] = '\0';
-
+    
     VMASMObject tmp = (VMASMObject) {
         .arg_a = vm->registers[REG_ARG_A],
         .arg_b = vm->registers[REG_ARG_B],
@@ -1341,8 +1343,6 @@ void extern_(VM *vm) {
 
 
     free(string);
-    string = NULL;
-
     vm->program_counter++;
 }
 
@@ -1359,33 +1359,13 @@ void extern_str(VM *vm) {
 
     i32 length = vm->registers[reg_szof_addr];
 
-    char *string = malloc(length + 1);
-
-    for(int i = 0; i < length; ++i) {
-        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
-
-        if(ptr) {
-            char c = (char)(*ptr & 0xFF);
-            string[i] = c;
-
-            if(c == '\0') break;
-        } else {
-            string[i] = '\0';
-            break;
-        }
-    }
-
-    string[length] = '\0';
-
+    char *string = vm_get_string(vm, buff_addr, length);
     vm_verbose(" set global string to -> '%s'}\n", string);
 
     vm_internal_setstring_all_libraries(vm, string);
 
     free(string);
-    string = NULL;
-
     vm->program_counter++;
-
 }
 
 void r_extern(VM *vm) {
@@ -1402,23 +1382,7 @@ void r_extern(VM *vm) {
 
     i32 length = vm->registers[reg_szof_addr];
 
-    char *string = malloc(length + 1);
-
-    for(int i = 0; i < length; ++i) {
-        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
-
-        if(ptr) {
-            char c = (char)(*ptr & 0xFF);
-            string[i] = c;
-
-            if(c == '\0') break;
-        } else {
-            string[i] = '\0';
-            break;
-        }
-    }
-
-    string[length] = '\0';
+    char *string = vm_get_string(vm, buff_addr, length);
 
     VMASMObject tmp = (VMASMObject) {
         .arg_a = vm->registers[REG_ARG_A],
@@ -1450,8 +1414,6 @@ void r_extern(VM *vm) {
 
 
     free(string);
-    string = NULL;
-
     vm->program_counter++;
 }
 
@@ -1468,29 +1430,11 @@ void r_extern_str(VM *vm) {
     i32 reg_szof_idx = vm->program[vm->program_counter];
     i32 length = vm->registers[reg_szof_idx];
 
-    char *string = malloc(length + 1);
-
-    for (int i = 0; i < length; ++i) {
-        i32 *ptr = get_vm_ptr(vm, buff_addr + i);
-
-        if(ptr) {
-            char c = (char)(*ptr & 0xFF);
-            string[i] = c;
-
-            if(c == '\0') break;
-        } else {
-            string[i] = '\0';
-            break;
-        }
-    }
-    string[length] = '\0';
-
+    char *string = vm_get_string(vm, buff_addr, length);
     vm_verbose(" set global string to -> '%s' }\n", string);
 
     vm_internal_setstring_all_libraries(vm, string);
 
     free(string);
-    string = NULL;
-
     vm->program_counter++;
 }
