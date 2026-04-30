@@ -58,7 +58,6 @@ static i32 *get_vm_ptr(VM *vm, i32 addr) {
     }
 
     return NULL;
-
 }
 
 static bool is_readonly_register(i32 reg_idx) {
@@ -105,6 +104,18 @@ static char *vm_get_string(VM *vm, i32 buff_addr, i32 length) {
     string[length] = '\0';
     return string;
 }
+
+static char *vm_get_cstring(VM *vm, i32 buff_addr) {
+    i32 len = 0;
+    while (len  < MAX_PROGRAM_SIZE) {
+        i32 *ptr = get_vm_ptr(vm, buff_addr + len);
+        if(!ptr || (char)(*ptr & 0xFF) == '\0') break;
+        len++;
+    }
+
+    return vm_get_string(vm, buff_addr, len);
+}
+
 
 static void vm_internal_setstring_all_libraries(VM *vm, const char *arg) {
 
@@ -754,36 +765,21 @@ void syscall_(VM *vm) {
         } break;
 
         case OPEN_SYSCALL: { /* arg_a = open(arg_b, arg_c, arg_d) */
-	    char path_buffer[PATH_MAX];
 	    i32 buff_addr = vm->registers[REG_ARG_B];
 	    i32 flags = vm->registers[REG_ARG_C];
 	    i32 mode = vm->registers[REG_ARG_D];
 
-	    i32 len = 0;
-	    while(len < (PATH_MAX -1)) {
+            char *path = vm_get_cstring(vm, buff_addr);
+            int fd = open(path, flags, mode);
 
-                i32 *ptr = get_vm_ptr(vm, buff_addr + len);
-                
-                if(!ptr || (char)(*ptr & 0xFF) == '\0') {
-                    break;
-                }
-
-                path_buffer[len] = (char)(*ptr & 0xFF);
-                len++;
-
-	    }
-	    /* dont trust the null terminator in the program */
-	    path_buffer[len] = '\0'; 
-
-	    int fd = open(path_buffer, flags, mode);
             if(fd == -1) {
                 vm_crash(vm, EXCEPTION_OPEN_SYSCALL_FAIL,
-                        .description = vm_text_format("Failed whilest trying to open '%s'", path_buffer),
+                        .description = vm_text_format("Failed whilest trying to open '%s'", path),
                         .detailed_description = "Could not open() the file");
             }
 	    vm->registers[REG_ARG_A] = (i32)fd;
 
-	    vm_verbose(" open(\"%s\", %d, %d) -> fd: %d }\n", path_buffer, flags, mode, fd);
+	    vm_verbose(" open(\"%s\", %d, %d) -> fd: %d }\n", path, flags, mode, fd);
 
         } break;
 
@@ -800,31 +796,37 @@ void syscall_(VM *vm) {
             i32 fd = vm->registers[REG_ARG_B];
             i32 buff_addr = vm->registers[REG_ARG_C];
             i32 count = vm->registers[REG_ARG_D];
-
             i32 bytes_read_total = 0;
+            char host_buff[1024];
 
             while(bytes_read_total < count) {
-                char c;
-                ssize_t n = read(fd, &c, 1);
+                i32 to_read = (count - bytes_read_total > 1024) ? 1024 : (count - bytes_read_total);
+                ssize_t n = read(fd, host_buff, to_read);
+                if (n <= 0) break; 
 
-                if (n <= 0) break; /* error or EOF */
-                
-                if(fd == 0 && c == '\n') break;
-
-
-                i32 *ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
-
-                if(ptr) {
-                    *ptr = (i32)c;
-                    bytes_read_total++;
+                for (ssize_t i = 0; i < n; ++i) {
+                    if (fd == 0 && host_buff[i] == '\n') {
+                        n = i + 1;
+                        break;
+                    }
+                    i32 *ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
+                    if(ptr) {
+                        *ptr = (i32)host_buff[i];
+                        bytes_read_total++;
+                    }
                 }
+                
+                if(fd == 0 && host_buff[n-1] == '\n') break;
             }
 
            
             i32 *null_terminator_ptr = get_vm_ptr(vm, buff_addr + bytes_read_total);
             if(null_terminator_ptr) *null_terminator_ptr = 0;
+
+            if (buff_addr == vm->registers[REG_HEAP_PTR]) {
+                vm->registers[REG_HEAP_PTR] += (bytes_read_total + 1);
+            }
             
-            vm->registers[REG_HEAP_PTR] += (bytes_read_total + 1);
             vm->registers[REG_RET] = bytes_read_total;
             vm_verbose(" read(%d, %d, %d) -> read %d bytes }\n", fd, buff_addr, count, bytes_read_total);
 
