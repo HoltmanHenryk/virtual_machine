@@ -136,6 +136,13 @@ static void vm_internal_setstring_all_libraries(VM *vm, const char *arg) {
 }
 
 static void vm_set_register(VM *vm, i32 ind, i32 value) {
+
+    if(is_readonly_register(ind)) {
+        vm_crash(vm, EXCEPTION_ILLEGAL_WRITE,
+                .description = "Caugth read only register write on external library",
+                .detailed_description = "Writing to read only registers is not allowed");
+    }
+
     vm->registers[ind] = value;
 }
 
