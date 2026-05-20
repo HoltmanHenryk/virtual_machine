@@ -160,11 +160,10 @@ int main(void) {
             .command = vmasm("opcodes/div.asm"),
             .expected = sv("DIV: { reg[10] / reg[20] |  100 / 10 = 10 }"));
 
-
-
-
-
-
+    add_test(&opcodes,
+            .name = sv("MOD opcode"),
+            .command = vmasm("opcodes/mod.asm"),
+            .expected = sv("MOD: { reg[1] % reg[2] |  10 % 20 = 10 }"));
 
     run_entire_suite(opcodes, .save_failed = &failed);
 
